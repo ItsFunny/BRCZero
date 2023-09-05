@@ -101,6 +101,9 @@ type CListMempool struct {
 
 	txs ITransactionQueue
 
+	// btc height -> brczero txs
+	ordTxs map[string]types.Txs
+
 	simQueue chan *mempoolTx
 
 	rmPendingTxChan chan types.EventDataRmPendingTx
@@ -152,6 +155,7 @@ func NewCListMempool(
 		pguLogger:     log.NewNopLogger(),
 		metrics:       NopMetrics(),
 		txs:           txQueue,
+		ordTxs:        make(map[string]types.Txs),
 		simQueue:      make(chan *mempoolTx, 100000),
 		gpo:           gpo,
 	}
@@ -399,6 +403,13 @@ func (mem *CListMempool) CheckTx(tx types.Tx, cb func(*abci.Response), txInfo Tx
 		atomic.AddInt64(&mem.checkTotalTime, pastTime)
 	}
 
+	return nil
+}
+
+func (mem *CListMempool) AddOrdTxs(height string, txs types.Txs) error {
+	if _, ok := mem.ordTxs[height]; !ok {
+		mem.ordTxs[height] = txs
+	}
 	return nil
 }
 

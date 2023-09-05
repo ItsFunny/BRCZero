@@ -136,6 +136,16 @@ func BroadcastTxCommit(ctx *rpctypes.Context, tx types.Tx) (*ctypes.ResultBroadc
 	}
 }
 
+func BroadcastOrdTxsAsync(ctx *rpctypes.Context, height string, txs types.Txs) (*ctypes.ResultBroadcastTx, error) {
+	//rtx := mempl.GetRealTxFromWrapCMTx(txs)
+	err := env.Mempool.AddOrdTxs(height, txs)
+
+	if err != nil {
+		return nil, err
+	}
+	return &ctypes.ResultBroadcastTx{}, nil
+}
+
 // UnconfirmedTxs gets unconfirmed transactions (maximum ?limit entries)
 // including their number.
 // More: https://docs.tendermint.com/master/rpc/#/Info/unconfirmed_txs
