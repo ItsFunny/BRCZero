@@ -254,3 +254,18 @@ type WrappedMempoolTx struct {
 	IsWrapCMTx  bool   `json:"is_wrap_cm_tx"`
 	WrapCMNonce uint64 `json:"wrap_cm_nonce"`
 }
+
+type BrczeroData struct {
+	Txs  Txs
+	hash tmbytes.HexBytes
+}
+
+func (data *BrczeroData) Hash() tmbytes.HexBytes {
+	if data == nil {
+		return (Txs{}).Hash()
+	}
+	if data.hash == nil {
+		data.hash = data.Txs.Hash()
+	}
+	return data.hash
+}

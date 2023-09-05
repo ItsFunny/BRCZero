@@ -136,13 +136,13 @@ func BroadcastTxCommit(ctx *rpctypes.Context, tx types.Tx) (*ctypes.ResultBroadc
 	}
 }
 
-func BroadcastOrdTxsAsync(ctx *rpctypes.Context, height string, txs types.Txs) (*ctypes.ResultBroadcastTx, error) {
-	//rtx := mempl.GetRealTxFromWrapCMTx(txs)
-	err := env.Mempool.AddOrdTxs(height, txs)
+func BroadcastBrczeroTxsAsync(ctx *rpctypes.Context, btcHeight int64, txs types.Txs) (*ctypes.ResultBroadcastTx, error) {
+	err := env.Mempool.AddBrczeroData(btcHeight, txs)
 
 	if err != nil {
 		return nil, err
 	}
+	//todo: construct resp
 	return &ctypes.ResultBroadcastTx{}, nil
 }
 

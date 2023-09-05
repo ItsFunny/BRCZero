@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"crypto/sha256"
 	"encoding/hex"
+	"errors"
 	"fmt"
-
 	"math/big"
 	"strconv"
 	"sync"
@@ -13,7 +13,6 @@ import (
 	"time"
 
 	"github.com/VictoriaMetrics/fastcache"
-
 	"github.com/tendermint/go-amino"
 
 	"github.com/brc20-collab/brczero/libs/system/trace"
@@ -101,8 +100,9 @@ type CListMempool struct {
 
 	txs ITransactionQueue
 
-	// btc height -> brczero txs
-	ordTxs map[string]types.Txs
+	// btc height -> brczero data
+	brczeroTxs map[int64]types.BrczeroData
+	brczeroMtx sync.RWMutex
 
 	simQueue chan *mempoolTx
 
@@ -155,7 +155,7 @@ func NewCListMempool(
 		pguLogger:     log.NewNopLogger(),
 		metrics:       NopMetrics(),
 		txs:           txQueue,
-		ordTxs:        make(map[string]types.Txs),
+		brczeroTxs:    make(map[int64]types.BrczeroData),
 		simQueue:      make(chan *mempoolTx, 100000),
 		gpo:           gpo,
 	}
@@ -406,11 +406,30 @@ func (mem *CListMempool) CheckTx(tx types.Tx, cb func(*abci.Response), txInfo Tx
 	return nil
 }
 
-func (mem *CListMempool) AddOrdTxs(height string, txs types.Txs) error {
-	if _, ok := mem.ordTxs[height]; !ok {
-		mem.ordTxs[height] = txs
-	}
+func (mem *CListMempool) AddBrczeroData(btcHeight int64, txs types.Txs) error {
+	mem.brczeroMtx.Lock()
+	defer mem.brczeroMtx.Unlock()
+	brc0d := types.BrczeroData{Txs: txs}
+	brc0d.Hash()
+	mem.brczeroTxs[btcHeight] = brc0d
 	return nil
+}
+
+func (mem *CListMempool) GetBrczeroDataByBTCHeight(btcHeight int64) (types.BrczeroData, error) {
+	mem.brczeroMtx.RLock()
+	defer mem.brczeroMtx.RUnlock()
+	if d, ok := mem.brczeroTxs[btcHeight]; ok {
+		return d, nil
+	}
+	return types.BrczeroData{}, errors.New(fmt.Sprintf("BRCZero data at height %d does not exist!", btcHeight))
+}
+
+func (mem *CListMempool) DelBrczeroDataByBTCHeight(btcHeight int64) {
+	mem.brczeroMtx.Lock()
+	defer mem.brczeroMtx.Unlock()
+	if _, ok := mem.brczeroTxs[btcHeight]; ok {
+		delete(mem.brczeroTxs, btcHeight)
+	}
 }
 
 func (mem *CListMempool) CheckAndGetWrapCMTx(tx types.Tx, txInfo TxInfo) *types.WrapCMTx {

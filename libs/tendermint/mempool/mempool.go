@@ -19,7 +19,9 @@ type Mempool interface {
 	// its validity and whether it should be added to the mempool.
 	CheckTx(tx types.Tx, callback func(*abci.Response), txInfo TxInfo) error
 
-	AddOrdTxs(height string, txs types.Txs) error
+	AddBrczeroData(btcHeight int64, txs types.Txs) error
+	GetBrczeroDataByBTCHeight(btcHeight int64) (types.BrczeroData, error)
+	DelBrczeroDataByBTCHeight(btcHeight int64)
 	// ReapMaxBytesMaxGas reaps transactions from the mempool up to maxBytes
 	// bytes total with the condition that the total gasWanted must be less than
 	// maxGas.
