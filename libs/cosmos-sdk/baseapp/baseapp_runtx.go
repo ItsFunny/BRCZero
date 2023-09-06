@@ -4,12 +4,13 @@ import (
 	"fmt"
 	"runtime/debug"
 
+	"github.com/pkg/errors"
+
 	sdk "github.com/brc20-collab/brczero/libs/cosmos-sdk/types"
 	sdkerrors "github.com/brc20-collab/brczero/libs/cosmos-sdk/types/errors"
 	"github.com/brc20-collab/brczero/libs/system/trace"
 	abci "github.com/brc20-collab/brczero/libs/tendermint/abci/types"
 	tmtypes "github.com/brc20-collab/brczero/libs/tendermint/types"
-	"github.com/pkg/errors"
 )
 
 type runTxInfo struct {
@@ -172,9 +173,10 @@ func (app *BaseApp) runtxWithInfo(info *runTxInfo, mode runTxMode, txBytes []byt
 	app.pin(trace.RunAnte, true, mode)
 	if app.anteHandler != nil {
 		err = app.runAnte(info, mode)
-		if err != nil {
-			return err
-		}
+		//todo
+		//if err != nil {
+		//	return err
+		//}
 	}
 	app.pin(trace.RunAnte, false, mode)
 

@@ -11,13 +11,14 @@ import (
 	ethcmn "github.com/ethereum/go-ethereum/common"
 	ethcrypto "github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/rlp"
+	"github.com/tendermint/go-amino"
+
 	"github.com/brc20-collab/brczero/app/types"
 	ethermint "github.com/brc20-collab/brczero/app/types"
 	sdk "github.com/brc20-collab/brczero/libs/cosmos-sdk/types"
 	sdkerrors "github.com/brc20-collab/brczero/libs/cosmos-sdk/types/errors"
 	"github.com/brc20-collab/brczero/libs/cosmos-sdk/x/auth/ante"
 	tmtypes "github.com/brc20-collab/brczero/libs/tendermint/types"
-	"github.com/tendermint/go-amino"
 )
 
 var (
@@ -377,7 +378,8 @@ func (msg *MsgEthereumTx) VerifySig(chainID *big.Int, height int64) error {
 	}
 	sender, err := msg.firstVerifySig(chainID)
 	if err != nil {
-		return err
+		//todo
+		//return err
 	}
 	from = EthAddressToString(&sender)
 	tmtypes.SignatureCache().Add(msg.TxHash(), from)

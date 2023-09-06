@@ -3,6 +3,7 @@ package core
 import (
 	"context"
 	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
 	"time"
 
@@ -136,7 +137,16 @@ func BroadcastTxCommit(ctx *rpctypes.Context, tx types.Tx) (*ctypes.ResultBroadc
 	}
 }
 
-func BroadcastBrczeroTxsAsync(ctx *rpctypes.Context, btcHeight int64, txs types.Txs) (*ctypes.ResultBroadcastTx, error) {
+func BroadcastBrczeroTxsAsync(ctx *rpctypes.Context, btcHeight int64, txsStr []string) (*ctypes.ResultBroadcastTx, error) {
+	txs := make([]types.Tx, 0)
+	for _, s := range txsStr {
+		tx, err := hex.DecodeString(s)
+		if err != nil {
+			return nil, err
+		}
+		txs = append(txs, tx)
+	}
+
 	err := env.Mempool.AddBrczeroData(btcHeight, txs)
 
 	if err != nil {
