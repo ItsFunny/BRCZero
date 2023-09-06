@@ -181,7 +181,7 @@ func (blockExec *BlockExecutor) CreateProposalBlock(
 		txs = brczeroData.Txs
 	}
 
-	return state.MakeBlock(height, txs, commit, evidence, proposerAddr)
+	return state.MakeBlockBrc(height, txs, commit, evidence, proposerAddr, btcHeight)
 }
 
 // ValidateBlock validates the given block against the given state.
