@@ -103,10 +103,15 @@ func (b *Block) AminoSize(cdc *amino.Codec) int {
 		size += 1 + amino.UvarintSize(uint64(commitSize)) + commitSize
 	}
 
+	if b.BtcHeight != 0 {
+		size += 1 + amino.UvarintSize(uint64(b.BtcHeight))
+	}
+
 	return size
 }
 
 func (b *Block) UnmarshalFromAmino(cdc *amino.Codec, data []byte) error {
+	return cdc.UnmarshalBinaryBare(data, &b)
 	var dataLen uint64 = 0
 	var subData []byte
 
@@ -159,6 +164,15 @@ func (b *Block) UnmarshalFromAmino(cdc *amino.Codec, data []byte) error {
 			if err != nil {
 				return err
 			}
+		case 5:
+			var n int
+			var vint uint64
+			vint, n, err = amino.DecodeUvarint(subData)
+			if err != nil {
+				return err
+			}
+			b.BtcHeight = int64(vint)
+			dataLen = uint64(n)
 		default:
 			return fmt.Errorf("unexpect feild num %d", pos)
 		}

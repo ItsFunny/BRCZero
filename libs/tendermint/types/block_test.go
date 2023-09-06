@@ -1022,6 +1022,7 @@ var blockAminoTestCases = []Block{
 			BlockID:    BlockID{Hash: []byte("hash"), PartsHeader: PartSetHeader{Total: 123, Hash: []byte("hash")}},
 			Signatures: commitSigAminoTestCases,
 		},
+		BtcHeight: 1000,
 	},
 	{
 		LastCommit: &Commit{},
