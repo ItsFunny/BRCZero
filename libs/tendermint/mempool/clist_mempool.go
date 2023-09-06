@@ -431,7 +431,7 @@ func (mem *CListMempool) BrczeroDataMinHeight() int64 {
 	var btcH int64 = math.MaxInt64
 	for h, _ := range mem.brczeroTxs {
 		if h < btcH {
-			h = btcH
+			btcH = h
 		}
 	}
 	return btcH
