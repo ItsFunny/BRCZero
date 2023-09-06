@@ -359,7 +359,7 @@ func (cs *State) addProposalBlockPart(msg *BlockPartMessage, peerID p2p.ID) (add
 		}
 		err = cs.unmarshalBlock()
 		if err != nil {
-			return
+			return added, err
 		}
 		cs.trc.Pin("lastPart")
 		cs.bt.onRecvBlock(height)
