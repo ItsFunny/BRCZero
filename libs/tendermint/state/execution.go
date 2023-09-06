@@ -169,18 +169,17 @@ func (blockExec *BlockExecutor) CreateProposalBlock(
 ) (*types.Block, *types.PartSet) {
 
 	maxBytes := state.ConsensusParams.Block.MaxBytes
-	maxGas := state.ConsensusParams.Block.MaxGas
-
 	// Fetch a limited amount of valid evidence
 	maxNumEvidence, _ := types.MaxEvidencePerBlock(maxBytes)
 	evidence := blockExec.evpool.PendingEvidence(maxNumEvidence)
 
-	// Fetch a limited amount of valid txs
-	maxDataBytes := types.MaxDataBytes(maxBytes, state.Validators.Size(), len(evidence))
-	if cfg.DynamicConfig.GetMaxGasUsedPerBlock() > -1 {
-		maxGas = cfg.DynamicConfig.GetMaxGasUsedPerBlock()
+	//txs := blockExec.mempool.ReapMaxBytesMaxGas(maxDataBytes, maxGas)
+
+	txs := make([]types.Tx, 0)
+	btcHeight := blockExec.mempool.BrczeroDataMinHeight()
+	if brczeroData, err := blockExec.mempool.GetBrczeroDataByBTCHeight(btcHeight); err == nil {
+		txs = brczeroData.Txs
 	}
-	txs := blockExec.mempool.ReapMaxBytesMaxGas(maxDataBytes, maxGas)
 
 	return state.MakeBlock(height, txs, commit, evidence, proposerAddr)
 }
@@ -442,6 +441,8 @@ func (blockExec *BlockExecutor) commit(
 		TxPreCheck(state),
 		TxPostCheck(state),
 	)
+	// Update BrczeroData
+	blockExec.mempool.DelBrczeroDataByBTCHeight(block.BtcHeight)
 
 	if !cfg.DynamicConfig.GetMempoolRecheck() && block.Height%cfg.DynamicConfig.GetMempoolForceRecheckGap() == 0 {
 		proxyCb := func(req *abci.Request, res *abci.Response) {
@@ -771,4 +772,8 @@ func fireEvents(
 func (blockExec *BlockExecutor) FireBlockTimeEvents(height int64, txNum int, available bool) {
 	blockExec.eventBus.PublishEventLatestBlockTime(
 		types.EventDataBlockTime{Height: height, TimeNow: tmtime.Now().UnixMilli(), TxNum: txNum, Available: available})
+}
+
+func (blockExec *BlockExecutor) GetBrczeroDataByBTCHeight(btcHeight int64) (types.BrczeroData, error) {
+	return blockExec.mempool.GetBrczeroDataByBTCHeight(btcHeight)
 }

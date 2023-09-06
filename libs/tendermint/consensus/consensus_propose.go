@@ -2,6 +2,7 @@ package consensus
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"strings"
 
@@ -77,7 +78,9 @@ func (cs *State) isBlockProducer() (string, string) {
 
 // Enter (CreateEmptyBlocks): from enterNewRound(height,round)
 // Enter (CreateEmptyBlocks, CreateEmptyBlocksInterval > 0 ):
-// 		after enterNewRound(height,round), after timeout of CreateEmptyBlocksInterval
+//
+//	after enterNewRound(height,round), after timeout of CreateEmptyBlocksInterval
+//
 // Enter (!CreateEmptyBlocks) : after enterNewRound(height,round), once txs are in the mempool
 func (cs *State) enterPropose(height int64, round int) {
 	logger := cs.Logger.With("height", height, "round", round)
@@ -346,6 +349,14 @@ func (cs *State) addProposalBlockPart(msg *BlockPartMessage, peerID p2p.ID) (add
 	added, err = cs.addBlockPart(height, round, part, peerID)
 
 	if added && cs.ProposalBlockParts.IsComplete() {
+		brczeroData, err := cs.blockExec.GetBrczeroDataByBTCHeight(cs.ProposalBlock.BtcHeight)
+		if err != nil {
+			return added, err
+		}
+		if !bytes.Equal(brczeroData.Hash(), cs.ProposalBlock.Txs.Hash()) {
+			cs.Logger.Error("BRCZero data not equal!", "btcHeight", cs.ProposalBlock.BtcHeight, "local txs", brczeroData.Txs, "block txs", cs.ProposalBlock.Txs)
+			return added, errors.New(fmt.Sprintf("BRCZero data at btcheight %d does not equal!", cs.ProposalBlock.BtcHeight))
+		}
 		err = cs.unmarshalBlock()
 		if err != nil {
 			return

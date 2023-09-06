@@ -9,10 +9,10 @@ import (
 	"sync"
 	"time"
 
-	gogotypes "github.com/gogo/protobuf/types"
 	"github.com/brc20-collab/brczero/libs/system/trace"
 	"github.com/brc20-collab/brczero/libs/tendermint/libs/compress"
 	tmtime "github.com/brc20-collab/brczero/libs/tendermint/types/time"
+	gogotypes "github.com/gogo/protobuf/types"
 
 	"github.com/tendermint/go-amino"
 
@@ -77,6 +77,7 @@ type Block struct {
 	Data       `json:"data"`
 	Evidence   EvidenceData `json:"evidence"`
 	LastCommit *Commit      `json:"last_commit"`
+	BtcHeight  int64        `json:"btc_height"`
 }
 
 func (b *Block) AminoSize(cdc *amino.Codec) int {

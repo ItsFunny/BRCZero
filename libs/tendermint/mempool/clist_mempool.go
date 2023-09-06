@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"math"
 	"math/big"
 	"strconv"
 	"sync"
@@ -422,6 +423,18 @@ func (mem *CListMempool) GetBrczeroDataByBTCHeight(btcHeight int64) (types.Brcze
 		return d, nil
 	}
 	return types.BrczeroData{}, errors.New(fmt.Sprintf("BRCZero data at height %d does not exist!", btcHeight))
+}
+
+func (mem *CListMempool) BrczeroDataMinHeight() int64 {
+	mem.brczeroMtx.RLock()
+	defer mem.brczeroMtx.RUnlock()
+	var btcH int64 = math.MaxInt64
+	for h, _ := range mem.brczeroTxs {
+		if h < btcH {
+			h = btcH
+		}
+	}
+	return btcH
 }
 
 func (mem *CListMempool) DelBrczeroDataByBTCHeight(btcHeight int64) {

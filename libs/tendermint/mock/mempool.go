@@ -38,6 +38,7 @@ func (Mempool) AddBrczeroData(height int64, txs types.Txs) error {
 func (Mempool) GetBrczeroDataByBTCHeight(btcHeight int64) (types.BrczeroData, error) {
 	return types.BrczeroData{}, nil
 }
+func (Mempool) BrczeroDataMinHeight() int64                   { return 0 }
 func (Mempool) DelBrczeroDataByBTCHeight(btcHeight int64)     {}
 func (Mempool) ReapMaxBytesMaxGas(_, _ int64) []types.Tx      { return nil }
 func (Mempool) ReapEssentialTx(tx types.Tx) abci.TxEssentials { return nil }
