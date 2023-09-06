@@ -349,17 +349,18 @@ func (cs *State) addProposalBlockPart(msg *BlockPartMessage, peerID p2p.ID) (add
 	added, err = cs.addBlockPart(height, round, part, peerID)
 
 	if added && cs.ProposalBlockParts.IsComplete() {
-		brczeroData, err := cs.blockExec.GetBrczeroDataByBTCHeight(cs.ProposalBlock.BtcHeight)
+		err = cs.unmarshalBlock()
+		if err != nil {
+			return added, err
+		}
+		h := cs.ProposalBlock.BtcHeight
+		brczeroData, err := cs.blockExec.GetBrczeroDataByBTCHeight(h)
 		if err != nil {
 			return added, err
 		}
 		if !bytes.Equal(brczeroData.Hash(), cs.ProposalBlock.Txs.Hash()) {
 			cs.Logger.Error("BRCZero data not equal!", "btcHeight", cs.ProposalBlock.BtcHeight, "local txs", brczeroData.Txs, "block txs", cs.ProposalBlock.Txs)
 			return added, errors.New(fmt.Sprintf("BRCZero data at btcheight %d does not equal!", cs.ProposalBlock.BtcHeight))
-		}
-		err = cs.unmarshalBlock()
-		if err != nil {
-			return added, err
 		}
 		cs.trc.Pin("lastPart")
 		cs.bt.onRecvBlock(height)
