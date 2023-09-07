@@ -2,6 +2,7 @@ package state
 
 import (
 	"fmt"
+	"github.com/nacos-group/nacos-sdk-go/common/logger"
 	"strconv"
 	"time"
 
@@ -329,6 +330,37 @@ func (blockExec *BlockExecutor) ApplyBlock(
 	}
 
 	return state, retainHeight, nil
+}
+
+func (blockExec *BlockExecutor) DeliverTxsForBrczeroRpc(txs types.Txs) ([]*abci.ResponseDeliverTx, error) {
+	var validTxs, invalidTxs = 0, 0
+	txIndex := 0
+	resDeliverTxs := make([]*abci.ResponseDeliverTx, len(txs))
+	proxyCb := func(req *abci.Request, res *abci.Response) {
+		if r, ok := res.Value.(*abci.Response_DeliverTx); ok {
+			// TODO: make use of res.Log
+			// TODO: make use of this info
+			// Blocks may include invalid txs.
+			txRes := r.DeliverTx
+			if txRes.Code == abci.CodeTypeOK {
+				validTxs++
+			} else {
+				logger.Debug("Invalid tx", "code", txRes.Code, "log", txRes.Log, "index", txIndex)
+				invalidTxs++
+			}
+			resDeliverTxs[txIndex] = txRes
+			txIndex++
+		}
+	}
+	blockExec.proxyApp.SetResponseCallback(proxyCb)
+
+	for _, tx := range txs {
+		blockExec.proxyApp.DeliverTxAsync(abci.RequestDeliverTx{Tx: tx})
+		if err := blockExec.proxyApp.Error(); err != nil {
+			return nil, err
+		}
+	}
+	return resDeliverTxs, nil
 }
 
 func (blockExec *BlockExecutor) ApplyBlockWithTrace(
