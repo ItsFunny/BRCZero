@@ -2,6 +2,7 @@ package state
 
 import (
 	"fmt"
+	"github.com/brc20-collab/brczero/libs/tendermint/abci/example/kvstore"
 	"github.com/nacos-group/nacos-sdk-go/common/logger"
 	"strconv"
 	"time"
@@ -352,11 +353,16 @@ func (blockExec *BlockExecutor) DeliverTxsForBrczeroRpc(txs types.Txs) ([]*abci.
 			txIndex++
 		}
 	}
-	blockExec.proxyApp.SetResponseCallback(proxyCb)
+	//proxyApp := blockExec.proxyApp
+	app := kvstore.NewApplication()
+	app.RetainBlocks = 1
+	cc := proxy.NewLocalClientCreator(app)
+	proxyApp := proxy.NewAppConns(cc).Consensus()
+	proxyApp.SetResponseCallback(proxyCb)
 
 	for _, tx := range txs {
-		blockExec.proxyApp.DeliverTxAsync(abci.RequestDeliverTx{Tx: tx})
-		if err := blockExec.proxyApp.Error(); err != nil {
+		proxyApp.DeliverTxAsync(abci.RequestDeliverTx{Tx: tx})
+		if err := proxyApp.Error(); err != nil {
 			return nil, err
 		}
 	}
