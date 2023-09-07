@@ -357,7 +357,13 @@ func (blockExec *BlockExecutor) DeliverTxsForBrczeroRpc(txs types.Txs) ([]*abci.
 	app := kvstore.NewApplication()
 	app.RetainBlocks = 1
 	cc := proxy.NewLocalClientCreator(app)
-	proxyApp := proxy.NewAppConns(cc).Consensus()
+
+	appConn := proxy.NewAppConns(cc)
+	if err := appConn.Start(); err != nil {
+		return nil, err
+	}
+	defer appConn.Stop()
+	proxyApp := appConn.Consensus()
 	proxyApp.SetResponseCallback(proxyCb)
 
 	for _, tx := range txs {
