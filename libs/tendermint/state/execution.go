@@ -334,6 +334,7 @@ func (blockExec *BlockExecutor) ApplyBlock(
 }
 
 func (blockExec *BlockExecutor) DeliverTxsForBrczeroRpc(txs types.Txs) (*ABCIResponses, error) {
+	block := types.MakeBlockBrc(2, txs, types.NewCommit(0, 0, types.BlockID{}, nil), make([]types.Evidence, 0), 0)
 	var validTxs, invalidTxs = 0, 0
 	txIndex := 0
 	abciResponses := NewABCIResponses(block)
