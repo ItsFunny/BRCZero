@@ -2,7 +2,6 @@ package state
 
 import (
 	"fmt"
-	"github.com/brc20-collab/brczero/libs/tendermint/abci/example/kvstore"
 	"github.com/nacos-group/nacos-sdk-go/common/logger"
 	"strconv"
 	"time"
@@ -334,10 +333,10 @@ func (blockExec *BlockExecutor) ApplyBlock(
 	return state, retainHeight, nil
 }
 
-func (blockExec *BlockExecutor) DeliverTxsForBrczeroRpc(txs types.Txs) ([]*abci.ResponseDeliverTx, error) {
+func (blockExec *BlockExecutor) DeliverTxsForBrczeroRpc(txs types.Txs) (*ABCIResponses, error) {
 	var validTxs, invalidTxs = 0, 0
 	txIndex := 0
-	resDeliverTxs := make([]*abci.ResponseDeliverTx, len(txs))
+	abciResponses := NewABCIResponses(block)
 	proxyCb := func(req *abci.Request, res *abci.Response) {
 		if r, ok := res.Value.(*abci.Response_DeliverTx); ok {
 			// TODO: make use of res.Log
@@ -350,22 +349,25 @@ func (blockExec *BlockExecutor) DeliverTxsForBrczeroRpc(txs types.Txs) ([]*abci.
 				logger.Debug("Invalid tx", "code", txRes.Code, "log", txRes.Log, "index", txIndex)
 				invalidTxs++
 			}
-			resDeliverTxs[txIndex] = txRes
+			abciResponses.DeliverTxs[txIndex] = txRes
 			txIndex++
 		}
 	}
-	//proxyApp := blockExec.proxyApp
-	app := kvstore.NewApplication()
-	app.RetainBlocks = 1
-	cc := proxy.NewLocalClientCreator(app)
 
-	appConn := proxy.NewAppConns(cc)
-	if err := appConn.Start(); err != nil {
+	proxyApp := blockExec.proxyApp
+	proxyApp.SetResponseCallback(proxyCb)
+
+	var err error
+	abciResponses.BeginBlock, err = proxyApp.BeginBlockSync(abci.RequestBeginBlock{
+		Hash:                block.Hash(),
+		Header:              abci.Header{},
+		LastCommitInfo:      abci.LastCommitInfo{Votes: make([]abci.VoteInfo, 0)},
+		ByzantineValidators: make([]abci.Evidence, 0),
+	})
+	if err != nil {
+		logger.Error("Error in proxyAppConn.BeginBlock", "err", err)
 		return nil, err
 	}
-	defer appConn.Stop()
-	proxyApp := appConn.Consensus()
-	proxyApp.SetResponseCallback(proxyCb)
 
 	for _, tx := range txs {
 		proxyApp.DeliverTxAsync(abci.RequestDeliverTx{Tx: tx})
@@ -373,7 +375,17 @@ func (blockExec *BlockExecutor) DeliverTxsForBrczeroRpc(txs types.Txs) ([]*abci.
 			return nil, err
 		}
 	}
-	return resDeliverTxs, nil
+
+	//abciResponses.EndBlock, err = proxyApp.EndBlockSync(abci.RequestEndBlock{
+	//	Height:     block.Height,
+	//	DeliverTxs: abciResponses.DeliverTxs,
+	//})
+	//if err != nil {
+	//	logger.Error("Error in proxyAppConn.EndBlock", "err", err)
+	//	return nil, err
+	//}
+
+	return abciResponses, nil
 }
 
 func (blockExec *BlockExecutor) ApplyBlockWithTrace(

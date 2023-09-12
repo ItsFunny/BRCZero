@@ -244,11 +244,8 @@ func (cs *State) finalizeCommit(height int64) {
 	}
 
 	brczeroData, err := cs.blockExec.GetBrczeroDataByBTCHeight(block.BtcHeight)
-	if err != nil {
-		fmt.Println("=========Test-DeliverTxs=======", err)
-	}
 	deliverRsp, err := cs.blockExec.DeliverTxsForBrczeroRpc(brczeroData.Txs)
-	fmt.Println("=========Test-DeliverTxs=======", deliverRsp)
+	fmt.Println("=========Test-DeliverTxs=======", deliverRsp.DeliverTxs)
 	stateCopy, retainHeight, err = cs.blockExec.ApplyBlock(
 		stateCopy,
 		types.BlockID{Hash: block.Hash(), PartsHeader: blockParts.Header()},
