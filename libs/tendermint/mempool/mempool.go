@@ -23,12 +23,7 @@ type Mempool interface {
 	GetBrczeroDataByBTCHeight(btcHeight int64) (types.BrczeroData, error)
 	DelBrczeroDataByBTCHeight(btcHeight int64)
 	BrczeroDataMinHeight() int64
-	// ReapMaxBytesMaxGas reaps transactions from the mempool up to maxBytes
-	// bytes total with the condition that the total gasWanted must be less than
-	// maxGas.
-	// If both maxes are negative, there is no cap on the size of all returned
-	// transactions (~ all available transactions).
-	ReapMaxBytesMaxGas(maxBytes, maxGas int64) []types.Tx
+
 	ReapEssentialTx(tx types.Tx) abci.TxEssentials
 
 	// ReapMaxTxs reaps up to max transactions from the mempool.
