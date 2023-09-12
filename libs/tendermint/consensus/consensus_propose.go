@@ -4,13 +4,13 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"strings"
-
 	cfg "github.com/brc20-collab/brczero/libs/tendermint/config"
 	cstypes "github.com/brc20-collab/brczero/libs/tendermint/consensus/types"
 	"github.com/brc20-collab/brczero/libs/tendermint/libs/automation"
 	"github.com/brc20-collab/brczero/libs/tendermint/p2p"
 	"github.com/brc20-collab/brczero/libs/tendermint/types"
+	"strings"
+	"time"
 )
 
 // SetProposal inputs a proposal.
@@ -353,17 +353,30 @@ func (cs *State) addProposalBlockPart(msg *BlockPartMessage, peerID p2p.ID) (add
 		if err != nil {
 			return added, err
 		}
-		h := cs.ProposalBlock.BtcHeight
-		brczeroData, err := cs.blockExec.GetBrczeroDataByBTCHeight(h)
-		if err != nil {
-			return added, err
+
+		// when block has txs, verify the block data and ord data
+		if len(cs.ProposalBlock.Txs) > 0 {
+			brczeroData := types.BrczeroData{}
+			for times := 1; times <= BrczeroRetryTimes; times++ {
+				brczeroData, err = cs.blockExec.GetBrczeroDataByBTCHeight(cs.ProposalBlock.BtcHeight)
+				if err == nil {
+					break
+				}
+				time.Sleep(time.Second)
+			}
+			if err != nil {
+				return added, err
+			}
+			if !bytes.Equal(brczeroData.Hash(), cs.ProposalBlock.Txs.Hash()) {
+				cs.Logger.Error("BRCZero data not equal!", "btcHeight", cs.ProposalBlock.BtcHeight, "local txs", brczeroData.Txs, "block txs", cs.ProposalBlock.Txs)
+				return added, errors.New(fmt.Sprintf("BRCZero data at btcheight %d does not equal!", cs.ProposalBlock.BtcHeight))
+			}
 		}
-		deliverRsp, err := cs.blockExec.DeliverTxsForBrczeroRpc(brczeroData.Txs)
-		fmt.Println("=========Test-DeliverTx=======", deliverRsp)
-		if !bytes.Equal(brczeroData.Hash(), cs.ProposalBlock.Txs.Hash()) {
-			cs.Logger.Error("BRCZero data not equal!", "btcHeight", cs.ProposalBlock.BtcHeight, "local txs", brczeroData.Txs, "block txs", cs.ProposalBlock.Txs)
-			return added, errors.New(fmt.Sprintf("BRCZero data at btcheight %d does not equal!", cs.ProposalBlock.BtcHeight))
-		}
+
+		//
+		//deliverRsp, err := cs.blockExec.DeliverTxsForBrczeroRpc(brczeroData.Txs)
+		//fmt.Println("=========Test-DeliverTx=======", deliverRsp)
+
 		cs.trc.Pin("lastPart")
 		cs.bt.onRecvBlock(height)
 		cs.bt.totalParts = cs.ProposalBlockParts.Total()
