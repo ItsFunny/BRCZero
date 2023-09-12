@@ -50,8 +50,9 @@ type preBlockTaskRes struct {
 //-----------------------------------------------------------------------------
 
 const (
-	msgQueueSize   = 1000
-	EnablePrerunTx = "enable-preruntx"
+	msgQueueSize      = 1000
+	EnablePrerunTx    = "enable-preruntx"
+	BrczeroRetryTimes = 5
 )
 
 // msgs from the reactor which may update the state
