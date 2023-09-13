@@ -372,3 +372,7 @@ func (cs *State) preMakeBlockRoutine() {
 		}
 	}
 }
+
+func (cs *State) rpcDeliverTxsRoutine() {
+
+}

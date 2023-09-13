@@ -399,6 +399,8 @@ go run scripts/json2wal/main.go wal.json $WALFILE # rebuild the file without cor
 
 	go cs.preMakeBlockRoutine()
 
+	go cs.rpcDeliverTxsRoutine()
+
 	// schedule the first round!
 	// use GetRoundState so we don't race the receiveRoutine for access
 	cs.scheduleRound0(cs.GetRoundState())

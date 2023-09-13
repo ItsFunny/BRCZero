@@ -333,8 +333,8 @@ func (blockExec *BlockExecutor) ApplyBlock(
 	return state, retainHeight, nil
 }
 
-func (blockExec *BlockExecutor) DeliverTxsForBrczeroRpc(txs types.Txs) (*ABCIResponses, error) {
-	block := types.MakeBlockBrc(2, txs, types.NewCommit(0, 0, types.BlockID{}, nil), make([]types.Evidence, 0), 0)
+func (blockExec *BlockExecutor) DeliverTxsForBrczeroRpc(block *types.Block) (*ABCIResponses, error) {
+	//block := types.MakeBlockBrc(2, txs, types.NewCommit(0, 0, types.BlockID{}, nil), make([]types.Evidence, 0), 0)
 	var validTxs, invalidTxs = 0, 0
 	txIndex := 0
 	abciResponses := NewABCIResponses(block)
@@ -361,7 +361,7 @@ func (blockExec *BlockExecutor) DeliverTxsForBrczeroRpc(txs types.Txs) (*ABCIRes
 	var err error
 	abciResponses.BeginBlock, err = proxyApp.BeginBlockSync(abci.RequestBeginBlock{
 		Hash:                block.Hash(),
-		Header:              abci.Header{},
+		Header:              types.TM2PB.Header(&block.Header),
 		LastCommitInfo:      abci.LastCommitInfo{Votes: make([]abci.VoteInfo, 0)},
 		ByzantineValidators: make([]abci.Evidence, 0),
 	})
@@ -370,7 +370,7 @@ func (blockExec *BlockExecutor) DeliverTxsForBrczeroRpc(txs types.Txs) (*ABCIRes
 		return nil, err
 	}
 
-	for _, tx := range txs {
+	for _, tx := range block.Txs {
 		proxyApp.DeliverTxAsync(abci.RequestDeliverTx{Tx: tx})
 		if err := proxyApp.Error(); err != nil {
 			return nil, err
