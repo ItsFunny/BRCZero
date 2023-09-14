@@ -123,7 +123,6 @@ func NewReactor(config *cfg.MempoolConfig, mempool *CListMempool) *Reactor {
 		memR.nodeKeyWhitelist[nodeKey] = struct{}{}
 	}
 	memR.BaseReactor = *p2p.NewBaseReactor("Mempool", memR)
-	memR.press()
 	return memR
 }
 
