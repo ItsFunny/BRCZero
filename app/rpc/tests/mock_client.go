@@ -11,6 +11,8 @@ import (
 
 	"github.com/brc20-collab/brczero/libs/tendermint/global"
 
+	"github.com/tendermint/go-amino"
+
 	apptesting "github.com/brc20-collab/brczero/libs/ibc-go/testing"
 	abci "github.com/brc20-collab/brczero/libs/tendermint/abci/types"
 	tmcfg "github.com/brc20-collab/brczero/libs/tendermint/config"
@@ -19,7 +21,6 @@ import (
 	"github.com/brc20-collab/brczero/libs/tendermint/libs/log"
 	tmmath "github.com/brc20-collab/brczero/libs/tendermint/libs/math"
 	"github.com/brc20-collab/brczero/libs/tendermint/mempool"
-	mempl "github.com/brc20-collab/brczero/libs/tendermint/mempool"
 	"github.com/brc20-collab/brczero/libs/tendermint/proxy"
 	"github.com/brc20-collab/brczero/libs/tendermint/rpc/client"
 	"github.com/brc20-collab/brczero/libs/tendermint/rpc/client/mock"
@@ -34,7 +35,6 @@ import (
 	"github.com/brc20-collab/brczero/libs/tendermint/store"
 	"github.com/brc20-collab/brczero/libs/tendermint/types"
 	dbm "github.com/brc20-collab/brczero/libs/tm-db"
-	"github.com/tendermint/go-amino"
 )
 
 type MockClient struct {
@@ -272,22 +272,7 @@ func (c MockClient) ABCIQueryWithOptions(
 	return &ctypes.ResultABCIQuery{Response: resQuery}, nil
 }
 func (c MockClient) BroadcastTxSync(tx types.Tx) (*ctypes.ResultBroadcastTx, error) {
-	resCh := make(chan *abci.Response, 1)
-	err := c.env.Mempool.CheckTx(tx, func(res *abci.Response) {
-		resCh <- res
-	}, mempl.TxInfo{})
-	if err != nil {
-		return nil, err
-	}
-	res := <-resCh
-	r := res.GetCheckTx()
-	return &ctypes.ResultBroadcastTx{
-		Code:      r.Code,
-		Data:      r.Data,
-		Log:       r.Log,
-		Codespace: r.Codespace,
-		Hash:      tx.Hash(),
-	}, nil
+	return nil, fmt.Errorf("BroadcastTxSync is not provided yet")
 }
 
 // error if either min or max are negative or min > max
