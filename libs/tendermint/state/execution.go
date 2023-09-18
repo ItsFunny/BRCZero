@@ -2,10 +2,12 @@ package state
 
 import (
 	"fmt"
-	"github.com/brc20-collab/brczero/libs/tendermint/abci/example/kvstore"
-	"github.com/nacos-group/nacos-sdk-go/common/logger"
 	"strconv"
 	"time"
+
+	"github.com/nacos-group/nacos-sdk-go/common/logger"
+
+	"github.com/brc20-collab/brczero/libs/tendermint/abci/example/kvstore"
 
 	"github.com/tendermint/go-amino"
 
@@ -178,12 +180,14 @@ func (blockExec *BlockExecutor) CreateProposalBlock(
 	//txs := blockExec.mempool.ReapMaxBytesMaxGas(maxDataBytes, maxGas)
 
 	txs := make([]types.Tx, 0)
+	btcBlockHash := ""
 	btcHeight := blockExec.mempool.BrczeroDataMinHeight()
 	if brczeroData, err := blockExec.mempool.GetBrczeroDataByBTCHeight(btcHeight); err == nil {
 		txs = brczeroData.Txs
+		btcBlockHash = brczeroData.BTCBlockHash
 	}
 
-	return state.MakeBlockBrc(height, txs, commit, evidence, proposerAddr, btcHeight)
+	return state.MakeBlockBrc(height, txs, commit, evidence, proposerAddr, btcHeight, btcBlockHash)
 }
 
 // ValidateBlock validates the given block against the given state.
@@ -485,7 +489,7 @@ func (blockExec *BlockExecutor) commit(
 		TxPreCheck(state),
 		TxPostCheck(state),
 	)
-	// Update BrczeroData
+	// Update BRCZeroData
 	blockExec.mempool.DelBrczeroDataByBTCHeight(block.BtcHeight)
 
 	if !cfg.DynamicConfig.GetMempoolRecheck() && block.Height%cfg.DynamicConfig.GetMempoolForceRecheckGap() == 0 {
@@ -818,6 +822,6 @@ func (blockExec *BlockExecutor) FireBlockTimeEvents(height int64, txNum int, ava
 		types.EventDataBlockTime{Height: height, TimeNow: tmtime.Now().UnixMilli(), TxNum: txNum, Available: available})
 }
 
-func (blockExec *BlockExecutor) GetBrczeroDataByBTCHeight(btcHeight int64) (types.BrczeroData, error) {
+func (blockExec *BlockExecutor) GetBrczeroDataByBTCHeight(btcHeight int64) (types.BRCZeroData, error) {
 	return blockExec.mempool.GetBrczeroDataByBTCHeight(btcHeight)
 }
