@@ -256,8 +256,9 @@ type WrappedMempoolTx struct {
 }
 
 type BrczeroData struct {
-	Txs  Txs
-	hash tmbytes.HexBytes
+	Txs          Txs
+	hash         tmbytes.HexBytes
+	btcBlockHash []byte
 }
 
 func (data *BrczeroData) Hash() tmbytes.HexBytes {

@@ -835,3 +835,7 @@ func (blockExec *BlockExecutor) FireBlockTimeEvents(height int64, txNum int, ava
 func (blockExec *BlockExecutor) GetBrczeroDataByBTCHeight(btcHeight int64) (types.BrczeroData, error) {
 	return blockExec.mempool.GetBrczeroDataByBTCHeight(btcHeight)
 }
+
+func (blockExec *BlockExecutor) BrczeroDataMinHeight() int64 {
+	return blockExec.mempool.BrczeroDataMinHeight()
+}

@@ -112,6 +112,8 @@ type CListMempool struct {
 	gpo *Oracle
 
 	info pguInfo
+
+	brczeroRpcCache types.UnconfirmedBTCTxRspCache
 }
 
 type pguInfo struct {
@@ -410,6 +412,7 @@ func (mem *CListMempool) CheckTx(tx types.Tx, cb func(*abci.Response), txInfo Tx
 func (mem *CListMempool) AddBrczeroData(btcHeight int64, txs types.Txs) error {
 	mem.brczeroMtx.Lock()
 	defer mem.brczeroMtx.Unlock()
+	// todo is rollback: del rpc cache
 	brc0d := types.BrczeroData{Txs: txs}
 	brc0d.Hash()
 	mem.brczeroTxs[btcHeight] = brc0d
