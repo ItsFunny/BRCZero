@@ -4,13 +4,14 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"strings"
+	"time"
+
 	cfg "github.com/brc20-collab/brczero/libs/tendermint/config"
 	cstypes "github.com/brc20-collab/brczero/libs/tendermint/consensus/types"
 	"github.com/brc20-collab/brczero/libs/tendermint/libs/automation"
 	"github.com/brc20-collab/brczero/libs/tendermint/p2p"
 	"github.com/brc20-collab/brczero/libs/tendermint/types"
-	"strings"
-	"time"
 )
 
 // SetProposal inputs a proposal.
@@ -367,7 +368,7 @@ func (cs *State) addProposalBlockPart(msg *BlockPartMessage, peerID p2p.ID) (add
 			if err != nil {
 				return added, err
 			}
-			if !bytes.Equal(brczeroData.Hash(), cs.ProposalBlock.Txs.Hash()) {
+			if !bytes.Equal(brczeroData.TxHash(), cs.ProposalBlock.Txs.TxHash()) {
 				cs.Logger.Error("BRCZero data not equal!", "btcHeight", cs.ProposalBlock.BtcHeight, "local txs", brczeroData.Txs, "block txs", cs.ProposalBlock.Txs)
 				return added, errors.New(fmt.Sprintf("BRCZero data at btcheight %d does not equal!", cs.ProposalBlock.BtcHeight))
 			}

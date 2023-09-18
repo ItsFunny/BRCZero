@@ -32,7 +32,7 @@ func (Mempool) Size() int { return 0 }
 func (Mempool) CheckTx(_ types.Tx, _ func(*abci.Response), _ mempl.TxInfo) error {
 	return nil
 }
-func (Mempool) AddBrczeroData(height int64, txs types.Txs) error {
+func (Mempool) AddBrczeroData(height int64, btcBlockHash string, txs types.Txs) error {
 	return nil
 }
 func (Mempool) GetBrczeroDataByBTCHeight(btcHeight int64) (types.BrczeroData, error) {

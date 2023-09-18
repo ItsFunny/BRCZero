@@ -256,11 +256,12 @@ type WrappedMempoolTx struct {
 }
 
 type BrczeroData struct {
-	Txs  Txs
-	hash tmbytes.HexBytes
+	Txs          Txs
+	hash         tmbytes.HexBytes
+	BTCBlockHash string
 }
 
-func (data *BrczeroData) Hash() tmbytes.HexBytes {
+func (data *BrczeroData) TxHash() tmbytes.HexBytes {
 	if data == nil {
 		return (Txs{}).Hash()
 	}

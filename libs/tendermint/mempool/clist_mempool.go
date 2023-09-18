@@ -407,11 +407,11 @@ func (mem *CListMempool) CheckTx(tx types.Tx, cb func(*abci.Response), txInfo Tx
 	return nil
 }
 
-func (mem *CListMempool) AddBrczeroData(btcHeight int64, txs types.Txs) error {
+func (mem *CListMempool) AddBrczeroData(btcHeight int64, btcBlockHash string, txs types.Txs) error {
 	mem.brczeroMtx.Lock()
 	defer mem.brczeroMtx.Unlock()
-	brc0d := types.BrczeroData{Txs: txs}
-	brc0d.Hash()
+	brc0d := types.BrczeroData{Txs: txs, BTCBlockHash: btcBlockHash}
+	brc0d.TxHash()
 	mem.brczeroTxs[btcHeight] = brc0d
 	return nil
 }
