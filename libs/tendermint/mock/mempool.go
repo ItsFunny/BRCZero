@@ -35,8 +35,8 @@ func (Mempool) CheckTx(_ types.Tx, _ func(*abci.Response), _ mempl.TxInfo) error
 func (Mempool) AddBrczeroData(height int64, btcBlockHash string, txs types.Txs) error {
 	return nil
 }
-func (Mempool) GetBrczeroDataByBTCHeight(btcHeight int64) (types.BrczeroData, error) {
-	return types.BrczeroData{}, nil
+func (Mempool) GetBrczeroDataByBTCHeight(btcHeight int64) (types.BRCZeroData, error) {
+	return types.BRCZeroData{}, nil
 }
 func (Mempool) BrczeroDataMinHeight() int64                   { return 0 }
 func (Mempool) DelBrczeroDataByBTCHeight(btcHeight int64)     {}

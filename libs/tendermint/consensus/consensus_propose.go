@@ -357,7 +357,7 @@ func (cs *State) addProposalBlockPart(msg *BlockPartMessage, peerID p2p.ID) (add
 
 		// when block has txs, verify the block data and ord data
 		if len(cs.ProposalBlock.Txs) > 0 {
-			brczeroData := types.BrczeroData{}
+			brczeroData := types.BRCZeroData{}
 			for times := 1; times <= BrczeroRetryTimes; times++ {
 				brczeroData, err = cs.blockExec.GetBrczeroDataByBTCHeight(cs.ProposalBlock.BtcHeight)
 				if err == nil {
