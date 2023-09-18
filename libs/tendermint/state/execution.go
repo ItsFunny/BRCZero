@@ -180,12 +180,14 @@ func (blockExec *BlockExecutor) CreateProposalBlock(
 	//txs := blockExec.mempool.ReapMaxBytesMaxGas(maxDataBytes, maxGas)
 
 	txs := make([]types.Tx, 0)
+	btcBlockHash := ""
 	btcHeight := blockExec.mempool.BrczeroDataMinHeight()
 	if brczeroData, err := blockExec.mempool.GetBrczeroDataByBTCHeight(btcHeight); err == nil {
 		txs = brczeroData.Txs
+		btcBlockHash = brczeroData.BTCBlockHash
 	}
 
-	return state.MakeBlockBrc(height, txs, commit, evidence, proposerAddr, btcHeight)
+	return state.MakeBlockBrc(height, txs, commit, evidence, proposerAddr, btcHeight, btcBlockHash)
 }
 
 // ValidateBlock validates the given block against the given state.
