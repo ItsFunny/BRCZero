@@ -172,6 +172,9 @@ func (r readStore) Delete(key []byte) {
 	delete(r.mp, string(key))
 }
 
+func (r readStore) CleanBrcRpcState() {
+}
+
 func (r readStore) Iterator(start, end []byte) cosmost.Iterator {
 	return r.kv.Iterator(start, end)
 }

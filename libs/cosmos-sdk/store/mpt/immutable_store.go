@@ -7,11 +7,11 @@ import (
 	"io"
 	"sync"
 
-	ethcmn "github.com/ethereum/go-ethereum/common"
-	ethstate "github.com/ethereum/go-ethereum/core/state"
 	"github.com/brc20-collab/brczero/libs/cosmos-sdk/store/cachekv"
 	"github.com/brc20-collab/brczero/libs/cosmos-sdk/store/tracekv"
 	"github.com/brc20-collab/brczero/libs/cosmos-sdk/store/types"
+	ethcmn "github.com/ethereum/go-ethereum/common"
+	ethstate "github.com/ethereum/go-ethereum/core/state"
 )
 
 type ImmutableMptStore struct {
@@ -87,6 +87,10 @@ func (ms *ImmutableMptStore) Set(key []byte, value []byte) {
 }
 
 func (ms *ImmutableMptStore) Delete(key []byte) {
+	panic("immutable store cannot delete")
+}
+
+func (ms *ImmutableMptStore) CleanBrcRpcState() {
 	panic("immutable store cannot delete")
 }
 

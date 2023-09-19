@@ -841,3 +841,7 @@ func (blockExec *BlockExecutor) GetBrczeroDataByBTCHeight(btcHeight int64) (type
 func (blockExec *BlockExecutor) BrczeroDataMinHeight() int64 {
 	return blockExec.mempool.BrczeroDataMinHeight()
 }
+
+func (blockExec *BlockExecutor) CleanBrcRpcState() {
+	blockExec.proxyApp.CleanBrcRpcState()
+}

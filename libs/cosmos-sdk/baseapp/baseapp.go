@@ -1055,3 +1055,7 @@ func (app *BaseApp) GetCMS() sdk.CommitMultiStore {
 func (app *BaseApp) GetTxDecoder() sdk.TxDecoder {
 	return app.txDecoder
 }
+
+func (app *BaseApp) CleanBrcRpcState() {
+	app.cms.CleanBrcRpcState()
+}

@@ -44,6 +44,10 @@ func (s *Store) Delete(key []byte) {
 	s.onWrite(true, key, nil)
 }
 
+func (s *Store) CleanBrcRpcState() {
+	s.parent.CleanBrcRpcState()
+}
+
 // Has implements the KVStore interface. It delegates the Has call to the
 // parent KVStore.
 func (s *Store) Has(key []byte) bool {
@@ -113,8 +117,8 @@ func (li *listenIterator) Value() []byte {
 }
 
 // Close implements the Iterator interface.
-func (li *listenIterator) Close()  {
-	 li.parent.Close()
+func (li *listenIterator) Close() {
+	li.parent.Close()
 }
 
 // Error delegates the Error call to the parent iterator.

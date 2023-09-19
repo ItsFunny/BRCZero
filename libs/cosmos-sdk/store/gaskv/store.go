@@ -74,6 +74,10 @@ func (gs *Store) Delete(key []byte) {
 	gs.parent.Delete(key)
 }
 
+func (gs *Store) CleanBrcRpcState() {
+	gs.parent.CleanBrcRpcState()
+}
+
 // Iterator implements the KVStore interface. It returns an iterator which
 // incurs a flat gas cost for seeking to the first key/value pair and a variable
 // gas cost based on the current value's length if the iterator is valid.

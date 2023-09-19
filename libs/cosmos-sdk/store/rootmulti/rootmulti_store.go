@@ -589,6 +589,12 @@ func (rs *Store) CommitterCommit(interface{}) (_ types.CommitID, _ interface{}) 
 	return
 }
 
+func (rs *Store) CleanBrcRpcState() {
+	for _, store := range rs.stores {
+		store.CleanBrcRpcState()
+	}
+}
+
 // Implements Committer/CommitStore.
 func (rs *Store) CommitterCommitMap(inputDeltaMap *tmtypes.TreeDelta) (types.CommitID, *tmtypes.TreeDelta) {
 	iavltree.IavlCommitAsyncNoBatch = cfg.DynamicConfig.GetIavlAcNoBatch()
