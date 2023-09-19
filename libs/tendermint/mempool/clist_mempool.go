@@ -112,8 +112,6 @@ type CListMempool struct {
 	gpo *Oracle
 
 	info pguInfo
-
-	brczeroRpcCache types.UnconfirmedBTCTxRspCache
 }
 
 type pguInfo struct {

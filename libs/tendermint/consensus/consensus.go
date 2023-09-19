@@ -97,7 +97,6 @@ type State struct {
 
 	// store blocks and commits
 	blockStore sm.BlockStore
-	rpcCache   types.UnconfirmedBTCTxRspCache
 
 	// create and execute blocks
 	blockExec *sm.BlockExecutor
