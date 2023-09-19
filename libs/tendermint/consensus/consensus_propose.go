@@ -243,7 +243,7 @@ func (cs *State) createProposalBlock() (block *types.Block, blockParts *types.Pa
 	return cs.blockExec.CreateProposalBlock(cs.Height, cs.state, commit, proposerAddr)
 }
 
-func (cs *State) createMockBlock(btcHeight int64, txs types.Txs) (block *types.Block, blockParts *types.PartSet) {
+func (cs *State) createMockBlock(btcHeight int64, bzd types.BRCZeroData) (block *types.Block, blockParts *types.PartSet) {
 	var commit *types.Commit
 	switch {
 	case cs.Height == types.GetStartBlockHeight()+1:
@@ -261,7 +261,7 @@ func (cs *State) createMockBlock(btcHeight int64, txs types.Txs) (block *types.B
 	//proposerAddr := cs.privValidatorPubKey.Address()
 	proposerAddr := cs.LastValidators.Proposer.PubKey.Address()
 
-	return cs.state.MakeBlockBrc(cs.Height, txs, commit, make([]types.Evidence, 0), proposerAddr, btcHeight)
+	return cs.state.MakeBlockBrc(cs.Height, bzd.Txs, commit, make([]types.Evidence, 0), proposerAddr, btcHeight, bzd.BTCBlockHash)
 }
 
 //-----------------------------------------------------------------------------

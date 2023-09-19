@@ -382,10 +382,14 @@ func (cs *State) rpcDeliverTxsRoutine() {
 			latestHandledBtcHeight = btcHeight
 			continue
 		}
-		brczeroData, _ := cs.blockExec.GetBrczeroDataByBTCHeight(btcHeight)
+
+		brczeroData, err := cs.blockExec.GetBrczeroDataByBTCHeight(btcHeight)
+		if err != nil {
+			continue
+		}
 
 		cs.mtx.RLock()
-		mockBlock, _ := cs.createMockBlock(btcHeight, brczeroData.Txs)
+		mockBlock, _ := cs.createMockBlock(btcHeight, brczeroData)
 		deliverRsp, _ := cs.blockExec.DeliverTxsForBrczeroRpc(mockBlock)
 		cs.mtx.RUnlock()
 		fmt.Println("=========Test-DeliverTxs=======", deliverRsp.DeliverTxs)
