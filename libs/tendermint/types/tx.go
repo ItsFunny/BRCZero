@@ -279,12 +279,13 @@ type WrappedMempoolTx struct {
 	WrapCMNonce uint64 `json:"wrap_cm_nonce"`
 }
 
-type BrczeroData struct {
-	Txs  Txs
-	hash tmbytes.HexBytes
+type BRCZeroData struct {
+	Txs          Txs
+	hash         tmbytes.HexBytes
+	BTCBlockHash string
 }
 
-func (data *BrczeroData) BRCZeroHash() tmbytes.HexBytes {
+func (data *BRCZeroData) BRCZeroHash() tmbytes.HexBytes {
 	if data == nil {
 		return (Txs{}).BRCZeroHash()
 	}

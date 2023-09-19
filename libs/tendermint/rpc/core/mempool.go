@@ -137,7 +137,7 @@ func BroadcastTxCommit(ctx *rpctypes.Context, tx types.Tx) (*ctypes.ResultBroadc
 	}
 }
 
-func BroadcastBrczeroTxsAsync(ctx *rpctypes.Context, btcHeight int64, brczeroTxs []types.BRCZeroRequestTx) (*ctypes.ResultBroadcastTx, error) {
+func BroadcastBrczeroTxsAsync(ctx *rpctypes.Context, btcHeight int64, btcBlockHash string, brczeroTxs []types.BRCZeroRequestTx) (*ctypes.ResultBroadcastTx, error) {
 	txs := make([]types.Tx, 0)
 	for _, s := range brczeroTxs {
 		tx, err := rlp.EncodeToBytes(s)
@@ -147,7 +147,7 @@ func BroadcastBrczeroTxsAsync(ctx *rpctypes.Context, btcHeight int64, brczeroTxs
 		txs = append(txs, tx)
 	}
 
-	err := env.Mempool.AddBrczeroData(btcHeight, txs)
+	err := env.Mempool.AddBrczeroData(btcHeight, btcBlockHash, txs)
 
 	if err != nil {
 		return nil, err
