@@ -9,10 +9,11 @@ import (
 	"sync"
 	"time"
 
+	gogotypes "github.com/gogo/protobuf/types"
+
 	"github.com/brc20-collab/brczero/libs/system/trace"
 	"github.com/brc20-collab/brczero/libs/tendermint/libs/compress"
 	tmtime "github.com/brc20-collab/brczero/libs/tendermint/types/time"
-	gogotypes "github.com/gogo/protobuf/types"
 
 	"github.com/tendermint/go-amino"
 
@@ -73,11 +74,12 @@ func (info BlockExInfo) IsCompressed() bool {
 type Block struct {
 	mtx sync.Mutex
 
-	Header     `json:"header"`
-	Data       `json:"data"`
-	Evidence   EvidenceData `json:"evidence"`
-	LastCommit *Commit      `json:"last_commit"`
-	BtcHeight  int64        `json:"btc_height"`
+	Header       `json:"header"`
+	Data         `json:"data"`
+	Evidence     EvidenceData `json:"evidence"`
+	LastCommit   *Commit      `json:"last_commit"`
+	BtcHeight    int64        `json:"btc_height"`
+	BtcBlockHash string       `json:"btc_block_hash"`
 }
 
 func (b *Block) AminoSize(cdc *amino.Codec) int {
@@ -107,10 +109,15 @@ func (b *Block) AminoSize(cdc *amino.Codec) int {
 		size += 1 + amino.UvarintSize(uint64(b.BtcHeight))
 	}
 
+	if b.BtcBlockHash != "" {
+		size += 1 + amino.EncodedStringSize(b.BtcBlockHash)
+	}
+
 	return size
 }
 
 func (b *Block) UnmarshalFromAmino(cdc *amino.Codec, data []byte) error {
+	//todo: Currently using Codec native Unmarshal
 	return cdc.UnmarshalBinaryBare(data, &b)
 	var dataLen uint64 = 0
 	var subData []byte
