@@ -377,27 +377,26 @@ func (cs *State) rpcDeliverTxsRoutine() {
 	var latestHandledBtcHeight int64 = 0
 	for {
 		btcHeight := cs.blockExec.BrczeroDataMinHeight()
-		if btcHeight <= latestHandledBtcHeight {
-			// todo clean rpc cache(btcHeight ~ latestHandledBtcHeight)
-			latestHandledBtcHeight = btcHeight
+		brczeroData, err := cs.blockExec.GetBrczeroDataByBTCHeight(btcHeight)
+		// todo handle data should be unconfirmed
+		if err != nil /*|| brczeroData.confirmed*/ {
 			continue
 		}
 
-		brczeroData, err := cs.blockExec.GetBrczeroDataByBTCHeight(btcHeight)
-		if err != nil {
-			continue
+		// received roll-back data
+		if btcHeight <= latestHandledBtcHeight {
+			cs.blockExec.CleanBrcRpcState()
 		}
 
 		cs.mtx.RLock()
 		mockBlock, _ := cs.createMockBlock(btcHeight, brczeroData)
+		// when DeliverTx, the stores(mpt and iavl) use Set()/Delete() and the cache the kv
 		deliverRsp, _ := cs.blockExec.DeliverTxsForBrczeroRpc(mockBlock)
 		cs.mtx.RUnlock()
 		fmt.Println("=========Test-DeliverTxs=======", deliverRsp.DeliverTxs)
-		// todo put deliverRsp into rpc cache
-		// todo update rpc cache(del oldest btcHeight)
 		latestHandledBtcHeight = btcHeight
 
-		time.Sleep(time.Second)
+		time.Sleep(time.Second * 5)
 	}
 
 }
