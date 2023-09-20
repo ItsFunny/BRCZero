@@ -1,6 +1,7 @@
 package iavl
 
 import (
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"github.com/brc20-collab/brczero/libs/cosmos-sdk/store/cachekv"
@@ -35,6 +36,8 @@ type Store struct {
 	flatKVStore *flatkv.Store
 	//for upgrade
 	upgradeVersion int64
+
+	brcRpcStateCache map[string][]byte
 }
 
 func (st *Store) CurrentVersion() int64 {
@@ -222,6 +225,7 @@ func (st *Store) CacheWrapWithTrace(w io.Writer, tc types.TraceContext) types.Ca
 // Implements types.KVStore.
 func (st *Store) Set(key, value []byte) {
 	types.AssertValidValue(value)
+	st.brcRpcStateCache[hex.EncodeToString(key)] = value
 	st.tree.Set(key, value)
 	st.setFlatKV(key, value)
 }
@@ -240,6 +244,13 @@ func (st *Store) Get(key []byte) []byte {
 	return value
 }
 
+func (st *Store) GetBrcRpcState(key []byte) []byte {
+	if value, ok := st.brcRpcStateCache[hex.EncodeToString(key)]; ok {
+		return value
+	}
+	return nil
+}
+
 // Implements types.KVStore.
 func (st *Store) Has(key []byte) (exists bool) {
 	if st.hasFlatKV(key) {
@@ -250,8 +261,13 @@ func (st *Store) Has(key []byte) (exists bool) {
 
 // Implements types.KVStore.
 func (st *Store) Delete(key []byte) {
+	delete(st.brcRpcStateCache, hex.EncodeToString(key))
 	st.tree.Remove(key)
 	st.deleteFlatKV(key)
+}
+
+func (st *Store) CleanBrcRpcState() {
+	st.brcRpcStateCache = make(map[string][]byte, 0)
 }
 
 // DeleteVersions deletes a series of versions from the MutableTree. An error

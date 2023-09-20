@@ -71,6 +71,10 @@ func (tkv *Store) Delete(key []byte) {
 	tkv.parent.Delete(key)
 }
 
+func (tkv *Store) CleanBrcRpcState() {
+	tkv.parent.CleanBrcRpcState()
+}
+
 // Has implements the KVStore interface. It delegates the Has call to the
 // parent KVStore.
 func (tkv *Store) Has(key []byte) bool {

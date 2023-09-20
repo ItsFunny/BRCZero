@@ -166,10 +166,11 @@ func (state State) MakeBlockBrc(
 	evidence []types.Evidence,
 	proposerAddress []byte,
 	btcHeight int64,
+	btcBlockHash string,
 ) (*types.Block, *types.PartSet) {
 
 	// Build base block with block data.
-	block := types.MakeBlockBrc(height, txs, commit, evidence, btcHeight)
+	block := types.MakeBlockBrc(height, txs, commit, evidence, btcHeight, btcBlockHash)
 
 	// Set time.
 	var timestamp time.Time

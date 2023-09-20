@@ -80,6 +80,10 @@ func (s Store) Delete(key []byte) {
 	s.parent.Delete(s.key(key))
 }
 
+func (s Store) CleanBrcRpcState() {
+	s.parent.CleanBrcRpcState()
+}
+
 // Implements KVStore
 // Check https://github.com/tendermint/tendermint/blob/master/libs/db/prefix_db.go#L106
 func (s Store) Iterator(start, end []byte) types.Iterator {

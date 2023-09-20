@@ -102,7 +102,7 @@ type CListMempool struct {
 	txs ITransactionQueue
 
 	// btc height -> brczero data
-	brczeroTxs map[int64]types.BrczeroData
+	brczeroTxs map[int64]types.BRCZeroData
 	brczeroMtx sync.RWMutex
 
 	simQueue chan *mempoolTx
@@ -156,7 +156,7 @@ func NewCListMempool(
 		pguLogger:     log.NewNopLogger(),
 		metrics:       NopMetrics(),
 		txs:           txQueue,
-		brczeroTxs:    make(map[int64]types.BrczeroData),
+		brczeroTxs:    make(map[int64]types.BRCZeroData),
 		simQueue:      make(chan *mempoolTx, 100000),
 		gpo:           gpo,
 	}
@@ -407,22 +407,23 @@ func (mem *CListMempool) CheckTx(tx types.Tx, cb func(*abci.Response), txInfo Tx
 	return nil
 }
 
-func (mem *CListMempool) AddBrczeroData(btcHeight int64, txs types.Txs) error {
+func (mem *CListMempool) AddBrczeroData(btcHeight int64, btcBlockHash string, txs types.Txs) error {
 	mem.brczeroMtx.Lock()
 	defer mem.brczeroMtx.Unlock()
-	brc0d := types.BrczeroData{Txs: txs}
-	brc0d.Hash()
+	// todo is rollback: del rpc cache
+	brc0d := types.BRCZeroData{Txs: txs, BTCBlockHash: btcBlockHash}
+	brc0d.TxHash()
 	mem.brczeroTxs[btcHeight] = brc0d
 	return nil
 }
 
-func (mem *CListMempool) GetBrczeroDataByBTCHeight(btcHeight int64) (types.BrczeroData, error) {
+func (mem *CListMempool) GetBrczeroDataByBTCHeight(btcHeight int64) (types.BRCZeroData, error) {
 	mem.brczeroMtx.RLock()
 	defer mem.brczeroMtx.RUnlock()
 	if d, ok := mem.brczeroTxs[btcHeight]; ok {
 		return d, nil
 	}
-	return types.BrczeroData{}, errors.New(fmt.Sprintf("BRCZero data at height %d does not exist!", btcHeight))
+	return types.BRCZeroData{}, errors.New(fmt.Sprintf("BRCZero data at height %d does not exist!", btcHeight))
 }
 
 func (mem *CListMempool) BrczeroDataMinHeight() int64 {

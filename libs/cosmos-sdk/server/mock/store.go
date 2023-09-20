@@ -192,6 +192,9 @@ func (kv kvStore) Delete(key []byte) {
 	delete(kv.store, string(key))
 }
 
+func (kv kvStore) CleanBrcRpcState() {
+}
+
 func (kv kvStore) Prefix(prefix []byte) sdk.KVStore {
 	panic("not implemented")
 }
@@ -233,5 +236,9 @@ func (ms multiStore) GetCommitVersion() (int64, error) {
 }
 
 func (ms multiStore) CommitterCommitMap(*tmtypes.TreeDelta) (sdk.CommitID, *tmtypes.TreeDelta) {
+	panic("not implemented")
+}
+
+func (ms multiStore) CleanBrcRpcState() {
 	panic("not implemented")
 }

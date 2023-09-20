@@ -144,6 +144,9 @@ func (store *Store) Delete(key []byte) {
 	store.setCacheValue(key, nil, true, true)
 }
 
+func (Store *Store) CleanBrcRpcState() {
+}
+
 // Implements Cachetypes.KVStore.
 func (store *Store) WriteWithSnapshotWSet() types.SnapshotWSet {
 	// if parent is cachekv.Store, we can write kv more efficiently

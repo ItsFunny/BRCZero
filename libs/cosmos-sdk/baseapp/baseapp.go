@@ -665,9 +665,6 @@ func validateBasicTxMsgs(msgs []sdk.Msg) error {
 // otherwise it returns the application's checkstate.
 func (app *BaseApp) getState(mode runTxMode) *state {
 	if mode == runTxModeDeliver || mode == runTxModeDeliverInAsync {
-		if app.deliverState == nil {
-			app.setDeliverState(abci.Header{})
-		}
 		return app.deliverState
 	}
 
@@ -1057,4 +1054,8 @@ func (app *BaseApp) GetCMS() sdk.CommitMultiStore {
 
 func (app *BaseApp) GetTxDecoder() sdk.TxDecoder {
 	return app.txDecoder
+}
+
+func (app *BaseApp) CleanBrcRpcState() {
+	app.cms.CleanBrcRpcState()
 }

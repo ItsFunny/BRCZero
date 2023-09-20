@@ -243,12 +243,11 @@ func (cs *State) finalizeCommit(height int64) {
 		cs.handleCommitGapOffset(height)
 	}
 
-	brczeroData, err := cs.blockExec.GetBrczeroDataByBTCHeight(block.BtcHeight)
-	if err != nil {
-		fmt.Println("=========Test-DeliverTxs=======", err)
-	}
-	deliverRsp, err := cs.blockExec.DeliverTxsForBrczeroRpc(brczeroData.Txs)
-	fmt.Println("=========Test-DeliverTxs=======", deliverRsp)
+	//brczeroData, _ := cs.blockExec.GetBrczeroDataByBTCHeight(block.BtcHeight)
+	//mockBlock, _ := cs.createMockBlock(block.BtcHeight, brczeroData.Txs)
+	//deliverRsp, _ := cs.blockExec.DeliverTxsForBrczeroRpc(mockBlock)
+	//fmt.Println("=========Test-DeliverTxs=======", deliverRsp.DeliverTxs)
+
 	stateCopy, retainHeight, err = cs.blockExec.ApplyBlock(
 		stateCopy,
 		types.BlockID{Hash: block.Hash(), PartsHeader: blockParts.Header()},

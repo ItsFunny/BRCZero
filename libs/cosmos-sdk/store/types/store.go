@@ -205,6 +205,8 @@ type CommitMultiStore interface {
 	StopStore()
 
 	SetLogger(log log.Logger)
+
+	CleanBrcRpcState()
 }
 
 //---------subsp-------------------------------
@@ -240,6 +242,8 @@ type KVStore interface {
 	// CONTRACT: No writes may happen within a domain while an iterator exists over it.
 	// Exceptionally allowed for cachekv.Store, safe to write in the modules.
 	ReverseIterator(start, end []byte) Iterator
+
+	CleanBrcRpcState()
 }
 
 type CacheManager interface {

@@ -4,13 +4,14 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"strings"
+	"time"
+
 	cfg "github.com/brc20-collab/brczero/libs/tendermint/config"
 	cstypes "github.com/brc20-collab/brczero/libs/tendermint/consensus/types"
 	"github.com/brc20-collab/brczero/libs/tendermint/libs/automation"
 	"github.com/brc20-collab/brczero/libs/tendermint/p2p"
 	"github.com/brc20-collab/brczero/libs/tendermint/types"
-	"strings"
-	"time"
 )
 
 // SetProposal inputs a proposal.
@@ -242,6 +243,27 @@ func (cs *State) createProposalBlock() (block *types.Block, blockParts *types.Pa
 	return cs.blockExec.CreateProposalBlock(cs.Height, cs.state, commit, proposerAddr)
 }
 
+func (cs *State) createMockBlock(btcHeight int64, bzd types.BRCZeroData) (block *types.Block, blockParts *types.PartSet) {
+	var commit *types.Commit
+	switch {
+	case cs.Height == types.GetStartBlockHeight()+1:
+		// We're creating a proposal for the first block.
+		// The commit is empty, but not nil.
+		commit = types.NewCommit(0, 0, types.BlockID{}, nil)
+	case cs.LastCommit.HasTwoThirdsMajority():
+		// Make the commit from LastCommit
+		commit = cs.LastCommit.MakeCommit()
+	default: // This shouldn't happen.
+		cs.Logger.Error("enterPropose: Cannot propose anything: No commit for the previous block")
+		return
+	}
+
+	//proposerAddr := cs.privValidatorPubKey.Address()
+	proposerAddr := cs.LastValidators.Proposer.PubKey.Address()
+
+	return cs.state.MakeBlockBrc(cs.Height, bzd.Txs, commit, make([]types.Evidence, 0), proposerAddr, btcHeight, bzd.BTCBlockHash)
+}
+
 //-----------------------------------------------------------------------------
 
 func (cs *State) defaultSetProposal(proposal *types.Proposal) (bool, error) {
@@ -356,7 +378,7 @@ func (cs *State) addProposalBlockPart(msg *BlockPartMessage, peerID p2p.ID) (add
 
 		// when block has txs, verify the block data and ord data
 		if len(cs.ProposalBlock.Txs) > 0 {
-			brczeroData := types.BrczeroData{}
+			brczeroData := types.BRCZeroData{}
 			for times := 1; times <= BrczeroRetryTimes; times++ {
 				brczeroData, err = cs.blockExec.GetBrczeroDataByBTCHeight(cs.ProposalBlock.BtcHeight)
 				if err == nil {
@@ -367,8 +389,8 @@ func (cs *State) addProposalBlockPart(msg *BlockPartMessage, peerID p2p.ID) (add
 			if err != nil {
 				return added, err
 			}
-			if !bytes.Equal(brczeroData.Hash(), cs.ProposalBlock.Txs.Hash()) {
-				cs.Logger.Error("BRCZero data not equal!", "btcHeight", cs.ProposalBlock.BtcHeight, "local txs", brczeroData.Txs, "block txs", cs.ProposalBlock.Txs)
+			if !bytes.Equal(brczeroData.TxHash(), cs.ProposalBlock.Txs.Hash()) || brczeroData.BTCBlockHash != cs.ProposalBlock.BtcBlockHash {
+				cs.Logger.Error("BRCZero data not equal!", "btcHeight", cs.ProposalBlock.BtcHeight, "local txs", brczeroData.Txs, "block txs", cs.ProposalBlock.Txs, "btc block hash", cs.ProposalBlock.BtcBlockHash)
 				return added, errors.New(fmt.Sprintf("BRCZero data at btcheight %d does not equal!", cs.ProposalBlock.BtcHeight))
 			}
 		}

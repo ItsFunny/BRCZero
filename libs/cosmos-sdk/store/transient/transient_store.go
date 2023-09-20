@@ -88,3 +88,7 @@ func (ts *Store) GetFlatKVWriteCount() int {
 func (ts *Store) SetUpgradeVersion(int64) {
 
 }
+
+func (ts *Store) CleanBrcRpcState() {
+
+}

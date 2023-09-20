@@ -372,3 +372,32 @@ func (cs *State) preMakeBlockRoutine() {
 		}
 	}
 }
+
+func (cs *State) rpcDeliverTxsRoutine() {
+	var latestHandledBtcHeight int64 = 0
+	for {
+		btcHeight := cs.blockExec.BrczeroDataMinHeight()
+		if btcHeight <= latestHandledBtcHeight {
+			// todo clean rpc cache(btcHeight ~ latestHandledBtcHeight)
+			latestHandledBtcHeight = btcHeight
+			continue
+		}
+
+		brczeroData, err := cs.blockExec.GetBrczeroDataByBTCHeight(btcHeight)
+		if err != nil {
+			continue
+		}
+
+		cs.mtx.RLock()
+		mockBlock, _ := cs.createMockBlock(btcHeight, brczeroData)
+		deliverRsp, _ := cs.blockExec.DeliverTxsForBrczeroRpc(mockBlock)
+		cs.mtx.RUnlock()
+		fmt.Println("=========Test-DeliverTxs=======", deliverRsp.DeliverTxs)
+		// todo put deliverRsp into rpc cache
+		// todo update rpc cache(del oldest btcHeight)
+		latestHandledBtcHeight = btcHeight
+
+		time.Sleep(time.Second)
+	}
+
+}
