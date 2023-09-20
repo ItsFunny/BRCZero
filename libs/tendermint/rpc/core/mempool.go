@@ -3,8 +3,8 @@ package core
 import (
 	"context"
 	"crypto/sha256"
-	"encoding/hex"
 	"fmt"
+	"github.com/ethereum/go-ethereum/rlp"
 	"time"
 
 	"github.com/pkg/errors"
@@ -137,10 +137,10 @@ func BroadcastTxCommit(ctx *rpctypes.Context, tx types.Tx) (*ctypes.ResultBroadc
 	}
 }
 
-func BroadcastBrczeroTxsAsync(ctx *rpctypes.Context, btcHeight int64, btcBlockHash string, txsStr []string) (*ctypes.ResultBroadcastTx, error) {
+func BroadcastBrczeroTxsAsync(ctx *rpctypes.Context, btcHeight int64, btcBlockHash string, brczeroTxs []types.BRCZeroRequestTx) (*ctypes.ResultBroadcastTx, error) {
 	txs := make([]types.Tx, 0)
-	for _, s := range txsStr {
-		tx, err := hex.DecodeString(s)
+	for _, s := range brczeroTxs {
+		tx, err := rlp.EncodeToBytes(s)
 		if err != nil {
 			return nil, err
 		}
