@@ -52,6 +52,7 @@ func NewAnteHandler(ak auth.AccountKeeper, evmKeeper EVMKeeper, sk types.SupplyK
 		NewEthMempoolFeeDecorator(evmKeeper),
 		authante.NewValidateBasicDecorator(),
 		NewEthSigVerificationDecorator(),
+		NewAccountBlockedVerificationDecorator(evmKeeper), //account blocked check AnteDecorator
 		NewAccountAnteDecorator(ak, evmKeeper, sk),
 	)
 

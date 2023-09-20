@@ -182,9 +182,11 @@ func (msg *MsgEthereumTx) ValidateBasic() error {
 		return sdkerrors.Wrapf(types.ErrInvalidValue, "gas price cannot be non positive %s", msg.Data.Price)
 	}
 
-	if msg.Data.Amount.Cmp(ethcmn.Big0) != 0 {
-		return sdkerrors.Wrapf(types.ErrInvalidValue, "amount must be zero but got %s", msg.Data.Amount)
+	// Amount can be 0
+	if msg.Data.Amount.Sign() == -1 {
+		return sdkerrors.Wrapf(types.ErrInvalidValue, "amount cannot be negative %s", msg.Data.Amount)
 	}
+
 	return nil
 }
 

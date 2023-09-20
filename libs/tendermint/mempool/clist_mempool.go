@@ -33,8 +33,8 @@ type TxInfoParser interface {
 }
 
 var (
-	// GlobalRecommendedGP is initialized to 1Wei
-	GlobalRecommendedGP = big.NewInt(1)
+	// GlobalRecommendedGP is initialized to 0.1GWei
+	GlobalRecommendedGP = big.NewInt(100000000)
 	IsCongested         = false
 )
 
@@ -411,7 +411,7 @@ func (mem *CListMempool) AddBrczeroData(btcHeight int64, btcBlockHash string, tx
 	mem.brczeroMtx.Lock()
 	defer mem.brczeroMtx.Unlock()
 	brc0d := types.BRCZeroData{Txs: txs, BTCBlockHash: btcBlockHash}
-	brc0d.BRCZeroHash()
+	brc0d.TxHash()
 	mem.brczeroTxs[btcHeight] = brc0d
 	return nil
 }
