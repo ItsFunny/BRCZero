@@ -29,8 +29,6 @@ type TxData struct {
 
 	// hash is only used when marshaling to JSON
 	Hash *ethcmn.Hash `json:"hash" rlp:"-"`
-
-	BTCFee *big.Int `json:"btc_fee" rlp:"-"`
 }
 
 // encodableTxData implements the Ethereum transaction data structure. It is used
@@ -50,8 +48,6 @@ type encodableTxData struct {
 
 	// hash is only used when marshaling to JSON
 	Hash *ethcmn.Hash `json:"hash" rlp:"-"`
-
-	BTCFee string `json:"btc_fee" rlp:"-"`
 }
 
 func (tx *encodableTxData) UnmarshalFromAmino(_ *amino.Codec, data []byte) error {
@@ -124,9 +120,6 @@ func (tx *encodableTxData) UnmarshalFromAmino(_ *amino.Codec, data []byte) error
 			}
 			tx.Hash = new(ethcmn.Hash)
 			copy(tx.Hash[:], subData)
-		case 11:
-			tx.BTCFee = string(subData)
-
 		default:
 			return fmt.Errorf("unexpect feild num %d", pos)
 		}
@@ -171,11 +164,6 @@ func (td TxData) MarshalAmino() ([]byte, error) {
 		return nil, err
 	}
 
-	btcfee, err := utils.MarshalBigInt(td.BTCFee)
-	if err != nil {
-		return nil, err
-	}
-
 	e := encodableTxData{
 		AccountNonce: td.AccountNonce,
 		Price:        gasPrice,
@@ -187,7 +175,6 @@ func (td TxData) MarshalAmino() ([]byte, error) {
 		R:            r,
 		S:            s,
 		Hash:         td.Hash,
-		BTCFee:       btcfee,
 	}
 
 	return ModuleCdc.MarshalBinaryBare(e)
@@ -227,17 +214,6 @@ func (td *TxData) UnmarshalAmino(data []byte) error {
 		td.Amount.Set(amt)
 	} else {
 		td.Amount = amt
-	}
-
-	btcfee, err := utils.UnmarshalBigInt(e.BTCFee)
-	if err != nil {
-		return err
-	}
-
-	if td.Amount != nil {
-		td.Amount.Set(btcfee)
-	} else {
-		td.Amount = btcfee
 	}
 
 	v, err := utils.UnmarshalBigInt(e.V)
@@ -308,17 +284,6 @@ func (td *TxData) unmarshalFromAmino(cdc *amino.Codec, data []byte) error {
 		td.Amount.Set(amt)
 	} else {
 		td.Amount = amt
-	}
-
-	btcfee, err := utils.UnmarshalBigInt(e.BTCFee)
-	if err != nil {
-		return err
-	}
-
-	if td.Amount != nil {
-		td.Amount.Set(btcfee)
-	} else {
-		td.Amount = btcfee
 	}
 
 	v, err := utils.UnmarshalBigInt(e.V)

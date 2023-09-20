@@ -47,7 +47,7 @@ func ParseGasPrice() *hexutil.Big {
 		return (*hexutil.Big)(gasPrices[0].Amount.BigInt())
 	}
 	//return the default gas price : DefaultGasPrice
-	defaultGP := sdk.NewDecFromBigIntWithPrec(big.NewInt(ethermint.DefaultGasPrice), sdk.Precision).BigInt()
+	defaultGP := sdk.NewDecFromBigIntWithPrec(big.NewInt(ethermint.DefaultGasPrice), sdk.Precision/2+1).BigInt()
 	return (*hexutil.Big)(defaultGP)
 }
 
