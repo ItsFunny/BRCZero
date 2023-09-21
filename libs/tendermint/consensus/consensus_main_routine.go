@@ -378,8 +378,7 @@ func (cs *State) rpcDeliverTxsRoutine() {
 	for {
 		btcHeight := cs.blockExec.BrczeroDataMinHeight()
 		brczeroData, err := cs.blockExec.GetBrczeroDataByBTCHeight(btcHeight)
-		// todo handle data should be unconfirmed
-		if err != nil /*|| brczeroData.confirmed*/ {
+		if err != nil || brczeroData.IsConfirmed {
 			continue
 		}
 

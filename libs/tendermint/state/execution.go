@@ -180,8 +180,10 @@ func (blockExec *BlockExecutor) CreateProposalBlock(
 	btcBlockHash := ""
 	btcHeight := blockExec.mempool.BrczeroDataMinHeight()
 	if brczeroData, err := blockExec.mempool.GetBrczeroDataByBTCHeight(btcHeight); err == nil {
-		txs = brczeroData.Txs
-		btcBlockHash = brczeroData.BTCBlockHash
+		if brczeroData.IsConfirmed {
+			txs = brczeroData.Txs
+			btcBlockHash = brczeroData.BTCBlockHash
+		}
 	}
 
 	return state.MakeBlockBrc(height, txs, commit, evidence, proposerAddr, btcHeight, btcBlockHash)
