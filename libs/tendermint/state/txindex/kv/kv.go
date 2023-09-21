@@ -106,7 +106,7 @@ func (txi *TxIndex) AddBatch(b *txindex.Batch) error {
 
 	for _, result := range b.Ops {
 		hash := result.Tx.Hash()
-
+		fmt.Println("@@@@hehe:%s", hex.EncodeToString(hash))
 		// index tx by events
 		txi.indexEvents(result, hash, storeBatch)
 
