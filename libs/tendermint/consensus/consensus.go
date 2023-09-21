@@ -399,6 +399,7 @@ go run scripts/json2wal/main.go wal.json $WALFILE # rebuild the file without cor
 
 	go cs.preMakeBlockRoutine()
 
+	// todo should be rpc node
 	go cs.rpcDeliverTxsRoutine()
 
 	// schedule the first round!
