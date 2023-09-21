@@ -259,6 +259,7 @@ type BRCZeroData struct {
 	Txs          Txs
 	hash         tmbytes.HexBytes
 	BTCBlockHash string
+	IsConfirmed  bool
 }
 
 func (data *BRCZeroData) TxHash() tmbytes.HexBytes {
@@ -269,4 +270,10 @@ func (data *BRCZeroData) TxHash() tmbytes.HexBytes {
 		data.hash = data.Txs.Hash()
 	}
 	return data.hash
+}
+
+func (data *BRCZeroData) ToConfirmed() {
+	if !data.IsConfirmed {
+		data.IsConfirmed = true
+	}
 }
