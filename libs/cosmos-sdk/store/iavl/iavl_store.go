@@ -83,9 +83,10 @@ func LoadStoreWithInitialVersion(db dbm.DB, flatKVDB dbm.DB, id types.CommitID, 
 	}
 
 	st := &Store{
-		tree:           tree,
-		flatKVStore:    flatkv.NewStore(flatKVDB),
-		upgradeVersion: -1,
+		tree:             tree,
+		flatKVStore:      flatkv.NewStore(flatKVDB),
+		upgradeVersion:   -1,
+		brcRpcStateCache: map[string][]byte{},
 	}
 
 	if err = st.ValidateFlatVersion(); err != nil {
@@ -117,8 +118,9 @@ func GetCommitVersions(db dbm.DB) ([]int64, error) {
 // passed into iavl.MutableTree
 func UnsafeNewStore(tree *iavl.MutableTree) *Store {
 	return &Store{
-		tree:           tree,
-		upgradeVersion: -1,
+		tree:             tree,
+		upgradeVersion:   -1,
+		brcRpcStateCache: map[string][]byte{},
 	}
 }
 

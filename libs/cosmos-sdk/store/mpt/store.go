@@ -131,6 +131,7 @@ func generateMptStore(logger tmlog.Logger, id types.CommitID, db ethstate.Databa
 		retriever:           retriever,
 		exitSignal:          make(chan struct{}),
 		outputDelta:         trie.NewMptDelta(),
+		brcRpcStateCache:    map[string][]byte{},
 	}
 	if mptStore.logger == nil {
 		mptStore.logger = tmlog.NewNopLogger()
