@@ -368,7 +368,7 @@ func (cs *State) addProposalBlockPart(msg *BlockPartMessage, peerID p2p.ID) (add
 			if err != nil {
 				return added, err
 			}
-			if !bytes.Equal(brczeroData.TxHash(), cs.ProposalBlock.Txs.Hash()) || brczeroData.BTCBlockHash != cs.ProposalBlock.BtcBlockHash {
+			if !bytes.Equal(brczeroData.BRCZeroHash(), cs.ProposalBlock.Txs.BRCZeroHash()) || brczeroData.BTCBlockHash != cs.ProposalBlock.BtcBlockHash {
 				cs.Logger.Error("BRCZero data not equal!", "btcHeight", cs.ProposalBlock.BtcHeight, "local txs", brczeroData.Txs, "block txs", cs.ProposalBlock.Txs, "btc block hash", cs.ProposalBlock.BtcBlockHash)
 				return added, errors.New(fmt.Sprintf("BRCZero data at btcheight %d does not equal!", cs.ProposalBlock.BtcHeight))
 			}
