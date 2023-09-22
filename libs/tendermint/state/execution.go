@@ -178,11 +178,13 @@ func (blockExec *BlockExecutor) CreateProposalBlock(
 
 	txs := make([]types.Tx, 0)
 	btcBlockHash := ""
-	btcHeight := blockExec.mempool.BrczeroDataMinHeight()
-	if brczeroData, err := blockExec.mempool.GetBrczeroDataByBTCHeight(btcHeight); err == nil {
+	var btcHeight int64 = 0
+	minHeight := blockExec.mempool.BrczeroDataMinHeight()
+	if brczeroData, err := blockExec.mempool.GetBrczeroDataByBTCHeight(minHeight); err == nil {
 		if brczeroData.IsConfirmed {
 			txs = brczeroData.Txs
 			btcBlockHash = brczeroData.BTCBlockHash
+			btcHeight = minHeight
 		}
 	}
 
@@ -842,6 +844,10 @@ func (blockExec *BlockExecutor) GetBrczeroDataByBTCHeight(btcHeight int64) (type
 
 func (blockExec *BlockExecutor) BrczeroDataMinHeight() int64 {
 	return blockExec.mempool.BrczeroDataMinHeight()
+}
+
+func (BlockExec *BlockExecutor) BrczeroRollback() <-chan int64 {
+	return BlockExec.mempool.BrczeroRollBack()
 }
 
 func (blockExec *BlockExecutor) CleanBrcRpcState() {

@@ -108,6 +108,7 @@ func (app *appConnConsensus) SetOptionSync(req types.RequestSetOption) (*types.R
 }
 
 func (app *appConnConsensus) CleanBrcRpcState() {
+	app.appConn.CleanBrcRpcState()
 }
 
 //------------------------------------------------

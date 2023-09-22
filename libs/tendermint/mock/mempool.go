@@ -32,6 +32,9 @@ func (Mempool) Size() int { return 0 }
 func (Mempool) CheckTx(_ types.Tx, _ func(*abci.Response), _ mempl.TxInfo) error {
 	return nil
 }
+func (Mempool) BrczeroRollBack() <-chan int64 {
+	return nil
+}
 func (Mempool) AddBrczeroData(height int64, btcBlockHash string, isConfirmed bool, txs types.Txs) error {
 	return nil
 }

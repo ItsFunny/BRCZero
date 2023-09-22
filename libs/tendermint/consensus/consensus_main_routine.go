@@ -375,27 +375,32 @@ func (cs *State) preMakeBlockRoutine() {
 
 func (cs *State) rpcDeliverTxsRoutine() {
 	var latestHandledBtcHeight int64 = 0
+	tick := time.NewTicker(time.Second * 5)
 	for {
-		btcHeight := cs.blockExec.BrczeroDataMinHeight()
-		brczeroData, err := cs.blockExec.GetBrczeroDataByBTCHeight(btcHeight)
-		if err != nil || brczeroData.IsConfirmed {
-			continue
-		}
-
-		// received roll-back data
-		if btcHeight <= latestHandledBtcHeight {
+		select {
+		case rollbackHeight := <-cs.blockExec.BrczeroRollback():
+			fmt.Println("rollback!!!!!!!!!!!!!!")
 			cs.blockExec.CleanBrcRpcState()
+			latestHandledBtcHeight = rollbackHeight
+		case <-tick.C:
+			if latestHandledBtcHeight == 0 {
+				latestHandledBtcHeight = cs.blockExec.BrczeroDataMinHeight()
+			}
+			brczeroData, err := cs.blockExec.GetBrczeroDataByBTCHeight(latestHandledBtcHeight)
+			if err != nil {
+				continue
+			}
+			if brczeroData.IsConfirmed {
+				latestHandledBtcHeight++
+				continue
+			}
+			cs.mtx.RLock()
+			mockBlock, _ := cs.createMockBlock(latestHandledBtcHeight, brczeroData)
+			// when DeliverTx, the stores(mpt and iavl) use Set()/Delete() and the cache the kv
+			deliverRsp, _ := cs.blockExec.DeliverTxsForBrczeroRpc(mockBlock)
+			cs.mtx.RUnlock()
+			fmt.Println("=========Test-DeliverTxs=======", deliverRsp.DeliverTxs)
+			latestHandledBtcHeight++
 		}
-
-		cs.mtx.RLock()
-		mockBlock, _ := cs.createMockBlock(btcHeight, brczeroData)
-		// when DeliverTx, the stores(mpt and iavl) use Set()/Delete() and the cache the kv
-		deliverRsp, _ := cs.blockExec.DeliverTxsForBrczeroRpc(mockBlock)
-		cs.mtx.RUnlock()
-		fmt.Println("=========Test-DeliverTxs=======", deliverRsp.DeliverTxs)
-		latestHandledBtcHeight = btcHeight
-
-		time.Sleep(time.Second * 5)
 	}
-
 }
