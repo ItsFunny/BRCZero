@@ -58,6 +58,8 @@ var (
 	BlockCompressType      = 0x00
 	BlockCompressFlag      = 0
 	BlockCompressThreshold = 1024000
+
+	RpcFlag = false
 )
 
 type BlockExInfo struct {

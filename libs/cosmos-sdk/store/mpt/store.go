@@ -294,6 +294,10 @@ func (ms *MptStore) Set(key, value []byte) {
 
 	ms.brcRpcStateCache[hex.EncodeToString(key)] = value
 
+	if tmtypes.RpcFlag {
+		return
+	}
+
 	if produceDelta {
 		ms.outputDelta.SetKV = append(ms.outputDelta.SetKV, &trie.DeltaKV{Key: key, Val: value})
 	}

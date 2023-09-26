@@ -397,7 +397,9 @@ func (cs *State) rpcDeliverTxsRoutine() {
 			cs.mtx.RLock()
 			mockBlock, _ := cs.createMockBlock(latestHandledBtcHeight, brczeroData)
 			// when DeliverTx, the stores(mpt and iavl) use Set()/Delete() and the cache the kv
+			types.RpcFlag = true
 			deliverRsp, _ := cs.blockExec.DeliverTxsForBrczeroRpc(mockBlock)
+			types.RpcFlag = false
 			cs.mtx.RUnlock()
 			fmt.Println("=========Test-DeliverTxs=======", deliverRsp.DeliverTxs)
 			latestHandledBtcHeight++
