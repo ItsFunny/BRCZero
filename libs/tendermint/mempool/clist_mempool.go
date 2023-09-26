@@ -423,6 +423,11 @@ func (mem *CListMempool) AddBrczeroData(btcHeight int64, btcBlockHash string, is
 			return nil
 		} else {
 			needRollback = true
+			for bt, _ := range mem.brczeroTxs {
+				if bt > btcHeight {
+					delete(mem.brczeroTxs, bt)
+				}
+			}
 		}
 	}
 	brc0d := &types.BRCZeroData{Txs: txs, BTCBlockHash: btcBlockHash, IsConfirmed: isConfirmed}
