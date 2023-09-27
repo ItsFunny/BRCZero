@@ -18,6 +18,7 @@ const (
 
 type Store interface { //nolint
 	GetStoreType() StoreType
+	GetStoreName() string
 	CacheWrapper
 }
 

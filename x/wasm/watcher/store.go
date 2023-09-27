@@ -2,12 +2,15 @@ package watcher
 
 import (
 	"encoding/json"
-	"github.com/brc20-collab/brczero/libs/cosmos-sdk/store/prefix"
-	cosmost "github.com/brc20-collab/brczero/libs/cosmos-sdk/store/types"
 	"io"
 	"log"
 	"path/filepath"
 	"sync"
+
+	"github.com/brc20-collab/brczero/libs/cosmos-sdk/store/prefix"
+	cosmost "github.com/brc20-collab/brczero/libs/cosmos-sdk/store/types"
+
+	"github.com/spf13/viper"
 
 	"github.com/brc20-collab/brczero/app/types"
 	"github.com/brc20-collab/brczero/libs/cosmos-sdk/client/flags"
@@ -15,7 +18,6 @@ import (
 	sdk "github.com/brc20-collab/brczero/libs/cosmos-sdk/types"
 	dbm "github.com/brc20-collab/brczero/libs/tm-db"
 	"github.com/brc20-collab/brczero/x/evm/watcher"
-	"github.com/spf13/viper"
 )
 
 const (
@@ -132,6 +134,10 @@ type readStore struct {
 
 func (r *readStore) GetStoreType() cosmost.StoreType {
 	return r.kv.GetStoreType()
+}
+
+func (r *readStore) GetStoreName() string {
+	return r.kv.GetStoreName()
 }
 
 func (r *readStore) CacheWrap() cosmost.CacheWrap {

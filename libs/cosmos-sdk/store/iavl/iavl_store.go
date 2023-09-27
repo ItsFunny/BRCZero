@@ -4,6 +4,9 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"io"
+	"sync"
+
 	"github.com/brc20-collab/brczero/libs/cosmos-sdk/store/cachekv"
 	"github.com/brc20-collab/brczero/libs/cosmos-sdk/store/flatkv"
 	"github.com/brc20-collab/brczero/libs/cosmos-sdk/store/tracekv"
@@ -13,8 +16,6 @@ import (
 	abci "github.com/brc20-collab/brczero/libs/tendermint/abci/types"
 	tmkv "github.com/brc20-collab/brczero/libs/tendermint/libs/kv"
 	dbm "github.com/brc20-collab/brczero/libs/tm-db"
-	"io"
-	"sync"
 )
 
 var (
@@ -212,6 +213,10 @@ func (st *Store) VersionExists(version int64) bool {
 // Implements Store.
 func (st *Store) GetStoreType() types.StoreType {
 	return types.StoreTypeIAVL
+}
+
+func (st *Store) GetStoreName() string {
+	return "IAVLStore"
 }
 
 // Implements Store.

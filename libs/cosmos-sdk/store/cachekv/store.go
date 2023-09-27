@@ -65,6 +65,10 @@ func (store *Store) GetStoreType() types.StoreType {
 	return store.parent.GetStoreType()
 }
 
+func (store *Store) GetStoreName() string {
+	return store.parent.GetStoreName()
+}
+
 // Implements types.KVStore.
 func (store *Store) Get(key []byte) (value []byte) {
 	store.mtx.Lock()
@@ -126,8 +130,9 @@ func (store *Store) Set(key []byte, value []byte) {
 	types.AssertValidValue(value)
 
 	store.setCacheValue(key, value, false, true)
-
-	store.parent.Set(key, value)
+	if store.GetStoreName() == "MptStore" {
+		store.parent.Set(key, value)
+	}
 }
 
 // Implements types.KVStore.

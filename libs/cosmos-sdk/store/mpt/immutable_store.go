@@ -3,15 +3,17 @@ package mpt
 import (
 	"encoding/hex"
 	"fmt"
-	mpttype "github.com/brc20-collab/brczero/libs/cosmos-sdk/store/mpt/types"
 	"io"
 	"sync"
+
+	mpttype "github.com/brc20-collab/brczero/libs/cosmos-sdk/store/mpt/types"
+
+	ethcmn "github.com/ethereum/go-ethereum/common"
+	ethstate "github.com/ethereum/go-ethereum/core/state"
 
 	"github.com/brc20-collab/brczero/libs/cosmos-sdk/store/cachekv"
 	"github.com/brc20-collab/brczero/libs/cosmos-sdk/store/tracekv"
 	"github.com/brc20-collab/brczero/libs/cosmos-sdk/store/types"
-	ethcmn "github.com/ethereum/go-ethereum/common"
-	ethstate "github.com/ethereum/go-ethereum/core/state"
 )
 
 type ImmutableMptStore struct {
@@ -131,6 +133,9 @@ func (ms *ImmutableMptStore) ReverseIterator(start, end []byte) types.Iterator {
 
 func (ms *ImmutableMptStore) GetStoreType() types.StoreType {
 	return StoreTypeMPT
+}
+func (ms *ImmutableMptStore) GetStoreName() string {
+	return "ImmutableMptStore"
 }
 
 func (ms *ImmutableMptStore) CacheWrap() types.CacheWrap {

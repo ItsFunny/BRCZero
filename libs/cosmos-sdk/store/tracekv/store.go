@@ -164,6 +164,10 @@ func (tkv *Store) GetStoreType() types.StoreType {
 	return tkv.parent.GetStoreType()
 }
 
+func (tkv *Store) GetStoreName() string {
+	return tkv.parent.GetStoreName()
+}
+
 // CacheWrap implements the KVStore interface. It panics as a Store
 // cannot be cache wrapped.
 func (tkv *Store) CacheWrap() types.CacheWrap {

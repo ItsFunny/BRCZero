@@ -1,8 +1,9 @@
 package listenkv
 
 import (
-	"github.com/brc20-collab/brczero/libs/cosmos-sdk/store/types"
 	"io"
+
+	"github.com/brc20-collab/brczero/libs/cosmos-sdk/store/types"
 )
 
 var _ types.KVStore = &Store{}
@@ -130,6 +131,10 @@ func (li *listenIterator) Error() error {
 // KVStore type.
 func (s *Store) GetStoreType() types.StoreType {
 	return s.parent.GetStoreType()
+}
+
+func (s *Store) GetStoreName() string {
+	return s.parent.GetStoreName()
 }
 
 // CacheWrap implements the KVStore interface. It panics as a Store

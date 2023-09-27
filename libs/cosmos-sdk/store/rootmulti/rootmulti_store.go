@@ -138,6 +138,10 @@ func (rs *Store) GetStoreType() types.StoreType {
 	return types.StoreTypeMulti
 }
 
+func (rs *Store) GetStoreName() string {
+	return "RootMultiStore"
+}
+
 func (rs *Store) GetStores() map[types.StoreKey]types.CommitKVStore {
 	return rs.stores
 }

@@ -113,6 +113,10 @@ func (ms multiStore) GetStoreType() sdk.StoreType {
 	panic("not implemented")
 }
 
+func (ms multiStore) GetStoreName() string {
+	panic("not implemented")
+}
+
 func (ms multiStore) SetInterBlockCache(_ sdk.MultiStorePersistentCache) {
 	panic("not implemented")
 }
@@ -168,6 +172,10 @@ func (kv kvStore) CacheWrapWithTrace(w io.Writer, tc sdk.TraceContext) sdk.Cache
 }
 
 func (kv kvStore) GetStoreType() sdk.StoreType {
+	panic("not implemented")
+}
+
+func (kv kvStore) GetStoreName() string {
 	panic("not implemented")
 }
 

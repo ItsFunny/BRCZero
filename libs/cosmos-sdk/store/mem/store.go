@@ -74,6 +74,10 @@ func (s Store) GetStoreType() types.StoreType {
 	return types.StoreTypeMemory
 }
 
+func (s Store) GetStoreName() string {
+	return "MemoryStore"
+}
+
 // CacheWrap branches the underlying store.
 func (s Store) CacheWrap() types.CacheWrap {
 	return cachekv.NewStore(s)

@@ -51,6 +51,10 @@ func (ts *Store) GetStoreType() types.StoreType {
 	return types.StoreTypeTransient
 }
 
+func (ts *Store) GetStoreName() string {
+	return "TransientStore"
+}
+
 func (ts *Store) GetDBWriteCount() int {
 	return 0
 }

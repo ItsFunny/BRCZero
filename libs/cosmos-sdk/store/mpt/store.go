@@ -201,6 +201,10 @@ func (ms *MptStore) GetStoreType() types.StoreType {
 	return StoreTypeMPT
 }
 
+func (ms *MptStore) GetStoreName() string {
+	return "MptStore"
+}
+
 func (ms *MptStore) CacheWrap() types.CacheWrap {
 	stores := cachekv.NewStore(ms)
 	stores.StatisticsCell = ms
