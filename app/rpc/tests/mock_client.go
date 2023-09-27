@@ -7,15 +7,10 @@ import (
 	"net/http"
 	"time"
 
-	blockindexer "github.com/brc20-collab/brczero/libs/tendermint/state/indexer/block/kv"
-
-	"github.com/brc20-collab/brczero/libs/tendermint/global"
-
-	"github.com/tendermint/go-amino"
-
 	apptesting "github.com/brc20-collab/brczero/libs/ibc-go/testing"
 	abci "github.com/brc20-collab/brczero/libs/tendermint/abci/types"
 	tmcfg "github.com/brc20-collab/brczero/libs/tendermint/config"
+	"github.com/brc20-collab/brczero/libs/tendermint/global"
 	"github.com/brc20-collab/brczero/libs/tendermint/libs/bytes"
 	tmbytes "github.com/brc20-collab/brczero/libs/tendermint/libs/bytes"
 	"github.com/brc20-collab/brczero/libs/tendermint/libs/log"
@@ -29,12 +24,14 @@ import (
 	rpcserver "github.com/brc20-collab/brczero/libs/tendermint/rpc/jsonrpc/server"
 	sm "github.com/brc20-collab/brczero/libs/tendermint/state"
 	tmstate "github.com/brc20-collab/brczero/libs/tendermint/state"
+	blockindexer "github.com/brc20-collab/brczero/libs/tendermint/state/indexer/block/kv"
 	"github.com/brc20-collab/brczero/libs/tendermint/state/txindex"
 	"github.com/brc20-collab/brczero/libs/tendermint/state/txindex/kv"
 	"github.com/brc20-collab/brczero/libs/tendermint/state/txindex/null"
 	"github.com/brc20-collab/brczero/libs/tendermint/store"
 	"github.com/brc20-collab/brczero/libs/tendermint/types"
 	dbm "github.com/brc20-collab/brczero/libs/tm-db"
+	"github.com/tendermint/go-amino"
 )
 
 type MockClient struct {
