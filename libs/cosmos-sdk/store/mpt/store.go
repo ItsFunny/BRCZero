@@ -191,7 +191,7 @@ func (ms *MptStore) openTrie(id types.CommitID) error {
 func (ms *MptStore) GetImmutable(height int64) (*ImmutableMptStore, error) {
 	rootHash := ms.GetMptRootHash(uint64(height))
 
-	return NewImmutableMptStore(ms.db, rootHash)
+	return NewImmutableMptStore(ms.db, rootHash, ms.brcRpcStateCache)
 }
 
 /*

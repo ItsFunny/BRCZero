@@ -21,12 +21,15 @@ type ImmutableMptStore struct {
 	db   ethstate.Database
 	root ethcmn.Hash
 	mtx  sync.Mutex
+
+	brcRpcStateCache map[string][]byte
 }
 
-func NewImmutableMptStore(db ethstate.Database, root ethcmn.Hash) (*ImmutableMptStore, error) {
+func NewImmutableMptStore(db ethstate.Database, root ethcmn.Hash, brcRpcStateCache map[string][]byte) (*ImmutableMptStore, error) {
 	ms := &ImmutableMptStore{
-		db:   db,
-		root: root,
+		db:               db,
+		root:             root,
+		brcRpcStateCache: brcRpcStateCache,
 	}
 	trie, err := ms.db.OpenTrie(root)
 	if err != nil {
@@ -45,10 +48,19 @@ func NewImmutableMptStoreFromTrie(db ethstate.Database, trie ethstate.Trie) *Imm
 	return ms
 }
 
+func (ms *ImmutableMptStore) GetBrcRpcState(key []byte) []byte {
+	if value, ok := ms.brcRpcStateCache[hex.EncodeToString(key)]; ok {
+		return value
+	}
+	return nil
+}
+
 func (ms *ImmutableMptStore) Get(key []byte) []byte {
 	ms.mtx.Lock()
 	defer ms.mtx.Unlock()
-
+	if value := ms.GetBrcRpcState(key); value != nil {
+		return value
+	}
 	switch mptKeyType(key) {
 	case storageType:
 		_, stateRoot, realKey := decodeAddressStorageInfo(key)
@@ -93,7 +105,8 @@ func (ms *ImmutableMptStore) Delete(key []byte) {
 }
 
 func (ms *ImmutableMptStore) CleanBrcRpcState() {
-	panic("immutable store cannot delete")
+	fmt.Println("=======ImmutableMptStore test-CleanBrcRpcState: cache len", len(ms.brcRpcStateCache))
+	ms.brcRpcStateCache = make(map[string][]byte, 0)
 }
 
 func (ms *ImmutableMptStore) getStorageTrie(addr ethcmn.Address, stateRoot ethcmn.Hash) ethstate.Trie {
