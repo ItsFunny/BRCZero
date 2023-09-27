@@ -11,7 +11,7 @@ echo "************* Start brczero node... *************"
 ./testnet.sh -s -i -n 4
 
 echo "************* Start btc node... *************"
-rm -r ./bitcoin-data/regtest
+rm -rf ./bitcoin-data/regtest
 docker-compose -f bitcoin.yml up -d
 cp -r ./bitcoin-data/wallets ./bitcoin-data/regtest/
 sleep 5
