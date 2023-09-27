@@ -4,8 +4,11 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"github.com/ethereum/go-ethereum/rlp"
 	"math/big"
+
+	"github.com/ethereum/go-ethereum/rlp"
+
+	"github.com/golang/protobuf/proto"
 
 	"github.com/brc20-collab/brczero/libs/cosmos-sdk/codec"
 	sdk "github.com/brc20-collab/brczero/libs/cosmos-sdk/types"
@@ -15,7 +18,6 @@ import (
 	authtypes "github.com/brc20-collab/brczero/libs/cosmos-sdk/x/auth/types"
 	"github.com/brc20-collab/brczero/libs/tendermint/global"
 	"github.com/brc20-collab/brczero/libs/tendermint/types"
-	"github.com/golang/protobuf/proto"
 )
 
 const IGNORE_HEIGHT_CHECKING = -1
@@ -126,6 +128,11 @@ func evmDecoder(_ codec.CdcAbstraction, txBytes []byte) (tx sdk.Tx, err error) {
 				ethTx.Data.BTCFee = new(big.Int).SetUint64(brczeroTx.BTCFee)
 				tx = &ethTx
 			}
+		}
+	} else {
+		var ethTx MsgEthereumTx
+		if err = authtypes.EthereumTxDecode(txBytes, &ethTx); err == nil {
+			tx = &ethTx
 		}
 	}
 
