@@ -180,7 +180,6 @@ func newRepairApp(logger tmlog.Logger, db dbm.DB, traceStore io.Writer) *repairA
 		db,
 		traceStore,
 		false,
-		map[int64]bool{},
 		0,
 	)}
 }
