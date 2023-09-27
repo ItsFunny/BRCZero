@@ -38,7 +38,7 @@ var Routes = map[string]*rpc.RPCFunc{
 	"get_address_list":         rpc.NewRPCFunc(TmGetAddressList, ""),
 	"block_search":             rpc.NewRPCFunc(BlockSearch, "query,page,per_page,order_by"),
 
-	"broadcast_brczero_txs_async": rpc.NewRPCFunc(BroadcastBrczeroTxsAsync, "height,txs"),
+	"broadcast_brczero_txs_async": rpc.NewRPCFunc(BroadcastBrczeroTxsAsync, "height,block_hash,is_confirmed,txs"),
 
 	// abci API
 	"abci_query": rpc.NewRPCFunc(ABCIQuery, "path,data,height,prove"),

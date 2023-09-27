@@ -19,8 +19,8 @@ type Mempool interface {
 	// its validity and whether it should be added to the mempool.
 	CheckTx(tx types.Tx, callback func(*abci.Response), txInfo TxInfo) error
 
-	AddBrczeroData(btcHeight int64, txs types.Txs) error
-	GetBrczeroDataByBTCHeight(btcHeight int64) (types.BrczeroData, error)
+	AddBrczeroData(btcHeight int64, btcBlockHash string, isConfirmed bool, txs types.Txs) error
+	GetBrczeroDataByBTCHeight(btcHeight int64) (types.BRCZeroData, error)
 	DelBrczeroDataByBTCHeight(btcHeight int64)
 	BrczeroDataMinHeight() int64
 

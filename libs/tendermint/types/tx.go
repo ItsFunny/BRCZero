@@ -2,6 +2,7 @@ package types
 
 import (
 	"bytes"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"math/big"
@@ -41,23 +42,34 @@ type ethTxData struct {
 	S *big.Int `json:"s"`
 
 	// hash is only used when marshaling to JSON
-	Hash *ethcmn.Hash `json:"hash" rlp:"-"`
+	Hash   *ethcmn.Hash `json:"hash" rlp:"-"`
+	BTCFee string       `json:"btc_fee" rlp:"-"`
 }
 
 // Hash computes the TMHASH hash of the wire encoded transaction.
 func (tx Tx) Hash() []byte {
-	//// if we can't get length-prefixed bytes, this tx should not be an amino-encoded tx
-	//if _, err := amino.GetBinaryBareFromBinaryLengthPrefixed(tx); err != nil {
-	//	// if we can't get proto tag, this tx should not be a proto-encoded tx
-	//	_, _, length := protowire.ConsumeTag(tx)
-	//	if length < 0 {
-	//		return etherhash.Sum(tx)
-	//	}
-	//}
-	var msg ethTxData
-	if err := rlp.DecodeBytes(tx, &msg); err != nil {
-		return tmhash.Sum(tx)
+	var brczeroMsg BRCZeroRequestTx
+	if err := rlp.DecodeBytes(tx, &brczeroMsg); err == nil {
+		buff, err := hex.DecodeString(brczeroMsg.HexRlpEncodeTx)
+		if err != nil {
+			return tx.hash(tx)
+		}
+		return tx.hash(buff)
+	} else {
+		return tx.hash(tx)
 	}
+
+}
+
+func (tx Tx) hash(txBytes []byte) []byte {
+	var msg ethTxData
+	if err := rlp.DecodeBytes(txBytes, &msg); err != nil {
+		return tmhash.Sum(txBytes)
+	}
+	return etherhash.Sum(txBytes)
+}
+
+func (tx Tx) BRCZeroHash() []byte {
 	return etherhash.Sum(tx)
 }
 
@@ -77,6 +89,18 @@ func (txs Txs) Hash() []byte {
 	txBzs := make([][]byte, len(txs))
 	for i := 0; i < len(txs); i++ {
 		txBzs[i] = txs[i].Hash()
+	}
+	return merkle.SimpleHashFromByteSlices(txBzs)
+}
+
+// Hash returns the Merkle root hash of the transaction hashes.
+// i.e. the leaves of the tree are the hashes of the txs.
+func (txs Txs) BRCZeroHash() []byte {
+	// These allocations will be removed once Txs is switched to [][]byte,
+	// ref #2603. This is because golang does not allow type casting slices without unsafe
+	txBzs := make([][]byte, len(txs))
+	for i := 0; i < len(txs); i++ {
+		txBzs[i] = txs[i].BRCZeroHash()
 	}
 	return merkle.SimpleHashFromByteSlices(txBzs)
 }
@@ -255,17 +279,25 @@ type WrappedMempoolTx struct {
 	WrapCMNonce uint64 `json:"wrap_cm_nonce"`
 }
 
-type BrczeroData struct {
-	Txs  Txs
-	hash tmbytes.HexBytes
+type BRCZeroData struct {
+	Txs          Txs
+	hash         tmbytes.HexBytes
+	BTCBlockHash string
+	IsConfirmed  bool
 }
 
-func (data *BrczeroData) Hash() tmbytes.HexBytes {
+func (data *BRCZeroData) BRCZeroHash() tmbytes.HexBytes {
 	if data == nil {
-		return (Txs{}).Hash()
+		return (Txs{}).BRCZeroHash()
 	}
 	if data.hash == nil {
-		data.hash = data.Txs.Hash()
+		data.hash = data.Txs.BRCZeroHash()
 	}
 	return data.hash
+}
+
+func (data *BRCZeroData) ToConfirmed() {
+	if !data.IsConfirmed {
+		data.IsConfirmed = true
+	}
 }
