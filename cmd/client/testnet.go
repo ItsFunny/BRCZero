@@ -37,6 +37,7 @@ import (
 	tmtime "github.com/brc20-collab/brczero/libs/tendermint/types/time"
 	"github.com/brc20-collab/brczero/x/common"
 	"github.com/brc20-collab/brczero/x/genutil"
+	"github.com/brc20-collab/brczero/x/gov"
 	stakingtypes "github.com/brc20-collab/brczero/x/staking/types"
 )
 
@@ -375,11 +376,11 @@ func initGenFiles(
 	authGenState.Accounts = genAccounts
 	appGenState[authtypes.ModuleName] = cdc.MustMarshalJSON(authGenState)
 
-	//var govGenState gov.GenesisState
-	//cdc.MustUnmarshalJSON(appGenState[gov.ModuleName], &govGenState)
-	//
-	//govGenState.DepositParams.MinDeposit[0].Denom = coinDenom
-	//appGenState[gov.ModuleName] = cdc.MustMarshalJSON(govGenState)
+	var govGenState gov.GenesisState
+	cdc.MustUnmarshalJSON(appGenState[gov.ModuleName], &govGenState)
+
+	govGenState.DepositParams.MinDeposit[0].Denom = coinDenom
+	appGenState[gov.ModuleName] = cdc.MustMarshalJSON(govGenState)
 
 	//var mintGenState mint.GenesisState
 	//cdc.MustUnmarshalJSON(appGenState[mint.ModuleName], &mintGenState)
