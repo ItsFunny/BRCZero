@@ -5,10 +5,7 @@ import (
 	"fmt"
 
 	"github.com/ethereum/go-ethereum/rlp"
-	"time"
-
-	"github.com/pkg/errors"
-
+	
 	"github.com/brc20-collab/brczero/libs/cosmos-sdk/baseapp"
 	ctypes "github.com/brc20-collab/brczero/libs/tendermint/rpc/core/types"
 	rpctypes "github.com/brc20-collab/brczero/libs/tendermint/rpc/jsonrpc/types"
@@ -38,7 +35,7 @@ func BroadcastTxCommit(ctx *rpctypes.Context, tx types.Tx) (*ctypes.ResultBroadc
 	return nil, fmt.Errorf("BroadcastTxCommit is not provided yet")
 }
 
-func BroadcastBrczeroTxsAsync(ctx *rpctypes.Context, btcHeight int64, btcBlockHash string, isConfirmed bool,brczeroTxs []types.BRCZeroRequestTx) (*ctypes.ResultBroadcastTx, error) {
+func BroadcastBrczeroTxsAsync(ctx *rpctypes.Context, btcHeight int64, btcBlockHash string, isConfirmed bool, brczeroTxs []types.BRCZeroRequestTx) (*ctypes.ResultBroadcastTx, error) {
 	txs := make([]types.Tx, 0)
 	for _, s := range brczeroTxs {
 		tx, err := rlp.EncodeToBytes(s)
