@@ -106,7 +106,6 @@ func (txi *TxIndex) AddBatch(b *txindex.Batch) error {
 
 	for _, result := range b.Ops {
 		hash := result.Tx.Hash()
-
 		// index tx by events
 		txi.indexEvents(result, hash, storeBatch)
 

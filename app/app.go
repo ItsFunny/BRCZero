@@ -28,7 +28,6 @@ import (
 	stypes "github.com/brc20-collab/brczero/libs/cosmos-sdk/store/types"
 	sdk "github.com/brc20-collab/brczero/libs/cosmos-sdk/types"
 	"github.com/brc20-collab/brczero/libs/cosmos-sdk/types/module"
-	upgradetypes "github.com/brc20-collab/brczero/libs/cosmos-sdk/types/upgrade"
 	"github.com/brc20-collab/brczero/libs/cosmos-sdk/version"
 	"github.com/brc20-collab/brczero/libs/cosmos-sdk/x/auth"
 	authtypes "github.com/brc20-collab/brczero/libs/cosmos-sdk/x/auth/types"
@@ -145,7 +144,6 @@ type BRCZeroApp struct {
 
 	configurator module.Configurator
 	marshal      *codec.CodecProxy
-	heightTasks  map[int64]*upgradetypes.HeightTasks
 }
 
 // NewBRCZeroApp returns a reference to a new initialized BRCZero application.
@@ -154,7 +152,6 @@ func NewBRCZeroApp(
 	db dbm.DB,
 	traceStore io.Writer,
 	loadLatest bool,
-	skipUpgradeHeights map[int64]bool,
 	invCheckPeriod uint,
 	baseAppOptions ...func(*bam.BaseApp),
 ) *BRCZeroApp {
@@ -194,7 +191,6 @@ func NewBRCZeroApp(
 		keys:           keys,
 		tkeys:          tkeys,
 		subspaces:      make(map[string]params.Subspace),
-		heightTasks:    make(map[int64]*upgradetypes.HeightTasks),
 	}
 	bApp.SetInterceptors(makeInterceptors())
 
@@ -320,7 +316,6 @@ func NewBRCZeroApp(
 	app.mm.RegisterRoutes(app.Router(), app.QueryRouter())
 	app.configurator = module.NewConfigurator(app.Codec(), app.MsgServiceRouter(), app.GRPCQueryRouter())
 	app.mm.RegisterServices(app.configurator)
-	app.setupUpgradeModules(false)
 
 	// create the simulation manager and define the order of the modules for deterministic simulations
 	//

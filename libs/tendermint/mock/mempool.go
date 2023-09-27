@@ -32,6 +32,14 @@ func (Mempool) Size() int { return 0 }
 func (Mempool) CheckTx(_ types.Tx, _ func(*abci.Response), _ mempl.TxInfo) error {
 	return nil
 }
+func (Mempool) AddBrczeroData(height int64, btcBlockHash string, isConfirmed bool, txs types.Txs) error {
+	return nil
+}
+func (Mempool) GetBrczeroDataByBTCHeight(btcHeight int64) (types.BRCZeroData, error) {
+	return types.BRCZeroData{}, nil
+}
+func (Mempool) BrczeroDataMinHeight() int64                   { return 0 }
+func (Mempool) DelBrczeroDataByBTCHeight(btcHeight int64)     {}
 func (Mempool) ReapMaxBytesMaxGas(_, _ int64) []types.Tx      { return nil }
 func (Mempool) ReapEssentialTx(tx types.Tx) abci.TxEssentials { return nil }
 func (Mempool) ReapMaxTxs(n int) types.Txs                    { return types.Txs{} }

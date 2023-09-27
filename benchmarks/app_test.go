@@ -164,7 +164,7 @@ func InitializeOKXApp(b testing.TB, db dbm.DB, numAccounts int) AppInfo {
 }
 
 func setup(db dbm.DB, withGenesis bool, invCheckPeriod uint) (*app.BRCZeroApp, simapp.GenesisState) {
-	okxApp := app.NewBRCZeroApp(log.NewNopLogger(), db, nil, true, map[int64]bool{}, invCheckPeriod)
+	okxApp := app.NewBRCZeroApp(log.NewNopLogger(), db, nil, true, invCheckPeriod)
 	if withGenesis {
 		return okxApp, app.NewDefaultGenesisState()
 	}

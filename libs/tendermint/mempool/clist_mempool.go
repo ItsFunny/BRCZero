@@ -4,8 +4,9 @@ import (
 	"bytes"
 	"crypto/sha256"
 	"encoding/hex"
+	"errors"
 	"fmt"
-
+	"math"
 	"math/big"
 	"strconv"
 	"sync"
@@ -13,7 +14,6 @@ import (
 	"time"
 
 	"github.com/VictoriaMetrics/fastcache"
-
 	"github.com/tendermint/go-amino"
 
 	"github.com/brc20-collab/brczero/libs/system/trace"
@@ -33,8 +33,8 @@ type TxInfoParser interface {
 }
 
 var (
-	// GlobalRecommendedGP is initialized to 0.1GWei
-	GlobalRecommendedGP = big.NewInt(100000000)
+	// GlobalRecommendedGP is initialized to 1Wei
+	GlobalRecommendedGP = big.NewInt(1)
 	IsCongested         = false
 )
 
@@ -101,6 +101,10 @@ type CListMempool struct {
 
 	txs ITransactionQueue
 
+	// btc height -> brczero data
+	brczeroTxs map[int64]*types.BRCZeroData
+	brczeroMtx sync.RWMutex
+
 	simQueue chan *mempoolTx
 
 	rmPendingTxChan chan types.EventDataRmPendingTx
@@ -152,6 +156,7 @@ func NewCListMempool(
 		pguLogger:     log.NewNopLogger(),
 		metrics:       NopMetrics(),
 		txs:           txQueue,
+		brczeroTxs:    make(map[int64]*types.BRCZeroData),
 		simQueue:      make(chan *mempoolTx, 100000),
 		gpo:           gpo,
 	}
@@ -400,6 +405,51 @@ func (mem *CListMempool) CheckTx(tx types.Tx, cb func(*abci.Response), txInfo Tx
 	}
 
 	return nil
+}
+
+func (mem *CListMempool) AddBrczeroData(btcHeight int64, btcBlockHash string, isConfirmed bool, txs types.Txs) error {
+	mem.brczeroMtx.Lock()
+	defer mem.brczeroMtx.Unlock()
+	brc0d := &types.BRCZeroData{Txs: txs, BTCBlockHash: btcBlockHash, IsConfirmed: isConfirmed}
+	brc0d.BRCZeroHash()
+	mem.brczeroTxs[btcHeight] = brc0d
+	// todo: optimize
+	// Change previous BRCZeroData to confirmed status
+	for h, d := range mem.brczeroTxs {
+		if h <= btcHeight-6 {
+			d.ToConfirmed()
+		}
+	}
+	return nil
+}
+
+func (mem *CListMempool) GetBrczeroDataByBTCHeight(btcHeight int64) (types.BRCZeroData, error) {
+	mem.brczeroMtx.RLock()
+	defer mem.brczeroMtx.RUnlock()
+	if d, ok := mem.brczeroTxs[btcHeight]; ok {
+		return *d, nil
+	}
+	return types.BRCZeroData{}, errors.New(fmt.Sprintf("BRCZero data at height %d does not exist!", btcHeight))
+}
+
+func (mem *CListMempool) BrczeroDataMinHeight() int64 {
+	mem.brczeroMtx.RLock()
+	defer mem.brczeroMtx.RUnlock()
+	var btcH int64 = math.MaxInt64
+	for h, _ := range mem.brczeroTxs {
+		if h < btcH {
+			btcH = h
+		}
+	}
+	return btcH
+}
+
+func (mem *CListMempool) DelBrczeroDataByBTCHeight(btcHeight int64) {
+	mem.brczeroMtx.Lock()
+	defer mem.brczeroMtx.Unlock()
+	if _, ok := mem.brczeroTxs[btcHeight]; ok {
+		delete(mem.brczeroTxs, btcHeight)
+	}
 }
 
 func (mem *CListMempool) CheckAndGetWrapCMTx(tx types.Tx, txInfo TxInfo) *types.WrapCMTx {

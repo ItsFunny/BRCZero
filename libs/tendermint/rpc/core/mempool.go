@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/sha256"
 	"fmt"
+	"github.com/ethereum/go-ethereum/rlp"
 	"time"
 
 	"github.com/pkg/errors"
@@ -134,6 +135,25 @@ func BroadcastTxCommit(ctx *rpctypes.Context, tx types.Tx) (*ctypes.ResultBroadc
 			Hash:      rtx.Hash(),
 		}, err
 	}
+}
+
+func BroadcastBrczeroTxsAsync(ctx *rpctypes.Context, btcHeight int64, btcBlockHash string, isConfirmed bool,brczeroTxs []types.BRCZeroRequestTx) (*ctypes.ResultBroadcastTx, error) {
+	txs := make([]types.Tx, 0)
+	for _, s := range brczeroTxs {
+		tx, err := rlp.EncodeToBytes(s)
+		if err != nil {
+			return nil, err
+		}
+		txs = append(txs, tx)
+	}
+
+	err := env.Mempool.AddBrczeroData(btcHeight, btcBlockHash, isConfirmed, txs)
+
+	if err != nil {
+		return nil, err
+	}
+	//todo: construct resp
+	return &ctypes.ResultBroadcastTx{}, nil
 }
 
 // UnconfirmedTxs gets unconfirmed transactions (maximum ?limit entries)

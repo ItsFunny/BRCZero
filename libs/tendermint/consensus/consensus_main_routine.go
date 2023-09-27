@@ -190,7 +190,7 @@ func (cs *State) handleMsg(mi msgInfo) (added bool) {
 
 		cs.mtx.Unlock()
 		cs.mtx.Lock()
-		if added && cs.ProposalBlockParts.IsComplete() {
+		if added && cs.ProposalBlockParts.IsComplete() && err == nil {
 			cs.handleCompleteProposal(msg.Height)
 		}
 

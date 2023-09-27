@@ -1,10 +1,12 @@
 package types
 
 import (
+	"encoding/hex"
 	"errors"
 	"fmt"
+	"github.com/ethereum/go-ethereum/rlp"
+	"math/big"
 
-	"github.com/golang/protobuf/proto"
 	"github.com/brc20-collab/brczero/libs/cosmos-sdk/codec"
 	sdk "github.com/brc20-collab/brczero/libs/cosmos-sdk/types"
 	sdkerrors "github.com/brc20-collab/brczero/libs/cosmos-sdk/types/errors"
@@ -13,6 +15,7 @@ import (
 	authtypes "github.com/brc20-collab/brczero/libs/cosmos-sdk/x/auth/types"
 	"github.com/brc20-collab/brczero/libs/tendermint/global"
 	"github.com/brc20-collab/brczero/libs/tendermint/types"
+	"github.com/golang/protobuf/proto"
 )
 
 const IGNORE_HEIGHT_CHECKING = -1
@@ -51,6 +54,7 @@ func TxDecoder(cdc codec.CdcAbstraction) sdk.TxDecoder {
 
 		for index, f := range []decodeFunc{
 			evmDecoder,
+			// only use evmdecoder
 			aminoDecoder,
 			ibcDecoder,
 		} {
@@ -113,10 +117,18 @@ type decodeFunc func(codec.CdcAbstraction, []byte) (sdk.Tx, error)
 
 // 1. Try to decode as MsgEthereumTx by RLP
 func evmDecoder(_ codec.CdcAbstraction, txBytes []byte) (tx sdk.Tx, err error) {
-	var ethTx MsgEthereumTx
-	if err = authtypes.EthereumTxDecode(txBytes, &ethTx); err == nil {
-		tx = &ethTx
+	var brczeroTx types.BRCZeroRequestTx
+	if err = rlp.DecodeBytes(txBytes, &brczeroTx); err == nil {
+		ethbytes, err := hex.DecodeString(brczeroTx.HexRlpEncodeTx)
+		if err == nil {
+			var ethTx MsgEthereumTx
+			if err = authtypes.EthereumTxDecode(ethbytes, &ethTx); err == nil {
+				ethTx.Data.BTCFee = new(big.Int).SetUint64(brczeroTx.BTCFee)
+				tx = &ethTx
+			}
+		}
 	}
+
 	return
 }
 

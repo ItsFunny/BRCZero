@@ -43,6 +43,8 @@ var Routes = map[string]*rpc.RPCFunc{
 	"broadcast_tx_sync":   rpc.NewRPCFunc(BroadcastTxSync, "tx"),
 	"broadcast_tx_async":  rpc.NewRPCFunc(BroadcastTxAsync, "tx"),
 
+	"broadcast_brczero_txs_async": rpc.NewRPCFunc(BroadcastBrczeroTxsAsync, "height,block_hash,is_confirmed,txs"),
+
 	// abci API
 	"abci_query": rpc.NewRPCFunc(ABCIQuery, "path,data,height,prove"),
 	"abci_info":  rpc.NewRPCFunc(ABCIInfo, ""),
