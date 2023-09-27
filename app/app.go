@@ -343,8 +343,6 @@ func NewBRCZeroApp(
 	app.MountTransientStores(tkeys)
 
 	// initialize BaseApp
-	//todo set correct anteHandler
-	//app.SetAnteHandler(ante.NewAnteHandler(app.AccountKeeper, app.SupplyKeeper, validateMsgHook(), app.StakingKeeper, app.ParamsKeeper))
 	app.SetInitChainer(app.InitChainer)
 	app.SetBeginBlocker(app.BeginBlocker)
 	app.SetAnteHandler(ante.NewAnteHandler(app.AccountKeeper, app.EvmKeeper, app.SupplyKeeper, validateMsgHook()))
