@@ -47,10 +47,14 @@ import (
 	"github.com/brc20-collab/brczero/x/evm"
 	evmtypes "github.com/brc20-collab/brczero/x/evm/types"
 	"github.com/brc20-collab/brczero/x/genutil"
+	"github.com/brc20-collab/brczero/x/gov"
+	"github.com/brc20-collab/brczero/x/gov/keeper"
 	"github.com/brc20-collab/brczero/x/params"
+	paramsclient "github.com/brc20-collab/brczero/x/params/client"
 	paramstypes "github.com/brc20-collab/brczero/x/params/types"
 	"github.com/brc20-collab/brczero/x/slashing"
 	"github.com/brc20-collab/brczero/x/staking"
+	stakingclient "github.com/brc20-collab/brczero/x/staking/client"
 )
 
 func init() {
@@ -80,6 +84,10 @@ var (
 		genutil.AppModuleBasic{},
 		bank.AppModuleBasic{},
 		staking.AppModuleBasic{},
+		gov.NewAppModuleBasic(
+			paramsclient.ProposalHandler,
+			stakingclient.ProposeValidatorProposalHandler,
+		),
 		params.AppModuleBasic{},
 		crisis.AppModuleBasic{},
 		slashing.AppModuleBasic{},
@@ -92,6 +100,7 @@ var (
 		auth.FeeCollectorName:     nil,
 		staking.BondedPoolName:    {supply.Burner, supply.Staking},
 		staking.NotBondedPoolName: {supply.Burner, supply.Staking},
+		gov.ModuleName:            nil,
 	}
 
 	onceLog              sync.Once
@@ -121,6 +130,7 @@ type BRCZeroApp struct {
 	SupplyKeeper   supply.Keeper
 	StakingKeeper  staking.Keeper
 	SlashingKeeper slashing.Keeper
+	GovKeeper      gov.Keeper
 	CrisisKeeper   crisis.Keeper
 	ParamsKeeper   params.Keeper
 	EvidenceKeeper evidence.Keeper
@@ -167,6 +177,7 @@ func NewBRCZeroApp(
 		staking.StoreKey,
 		supply.StoreKey,
 		slashing.StoreKey,
+		gov.StoreKey,
 		params.StoreKey,
 		evidence.StoreKey,
 		mpt.StoreKey,
@@ -189,6 +200,7 @@ func NewBRCZeroApp(
 	app.subspaces[bank.ModuleName] = app.ParamsKeeper.Subspace(bank.DefaultParamspace)
 	app.subspaces[staking.ModuleName] = app.ParamsKeeper.Subspace(staking.DefaultParamspace)
 	app.subspaces[slashing.ModuleName] = app.ParamsKeeper.Subspace(slashing.DefaultParamspace)
+	app.subspaces[gov.ModuleName] = app.ParamsKeeper.Subspace(gov.DefaultParamspace)
 	app.subspaces[crisis.ModuleName] = app.ParamsKeeper.Subspace(crisis.DefaultParamspace)
 	app.subspaces[evidence.ModuleName] = app.ParamsKeeper.Subspace(evidence.DefaultParamspace)
 	app.subspaces[evm.ModuleName] = app.ParamsKeeper.Subspace(evm.DefaultParamspace)
@@ -231,6 +243,20 @@ func NewBRCZeroApp(
 	evidenceKeeper.SetRouter(evidenceRouter)
 	app.EvidenceKeeper = *evidenceKeeper
 
+	govRouter := gov.NewRouter()
+	govRouter.AddRoute(gov.RouterKey, gov.ProposalHandler).
+		AddRoute(params.RouterKey, params.NewParamChangeProposalHandler(&app.ParamsKeeper)).
+		AddRoute(staking.RouterKey, staking.NewProposalHandler(&app.StakingKeeper))
+
+	govProposalHandlerRouter := keeper.NewProposalHandlerRouter()
+	govProposalHandlerRouter.AddRoute(params.RouterKey, &app.ParamsKeeper)
+
+	app.GovKeeper = gov.NewKeeper(
+		app.marshal.GetCdc(), app.keys[gov.StoreKey], app.ParamsKeeper, app.subspaces[gov.DefaultParamspace],
+		app.SupplyKeeper, &stakingKeeper, gov.DefaultParamspace, govRouter,
+		app.BankKeeper, govProposalHandlerRouter, auth.FeeCollectorName,
+	)
+
 	// register the staking hooks
 	// NOTE: stakingKeeper above is passed by reference, so that it will contain these hooks
 	app.StakingKeeper = *stakingKeeper.SetHooks(
@@ -245,6 +271,7 @@ func NewBRCZeroApp(
 		bank.NewAppModule(app.BankKeeper, app.AccountKeeper, app.SupplyKeeper),
 		crisis.NewAppModule(&app.CrisisKeeper),
 		supply.NewAppModule(app.SupplyKeeper, app.AccountKeeper),
+		gov.NewAppModule(app.GovKeeper, app.SupplyKeeper),
 		slashing.NewAppModule(app.SlashingKeeper, app.AccountKeeper, app.StakingKeeper),
 		staking.NewAppModule(app.StakingKeeper, app.AccountKeeper, app.SupplyKeeper),
 		evidence.NewAppModule(app.EvidenceKeeper),
@@ -264,6 +291,7 @@ func NewBRCZeroApp(
 	)
 	app.mm.SetOrderEndBlockers(
 		crisis.ModuleName,
+		gov.ModuleName,
 		staking.ModuleName,
 		evm.ModuleName,
 	)
@@ -275,6 +303,7 @@ func NewBRCZeroApp(
 		staking.ModuleName,
 		bank.ModuleName,
 		slashing.ModuleName,
+		gov.ModuleName,
 		supply.ModuleName,
 		evm.ModuleName,
 		crisis.ModuleName,
@@ -296,6 +325,7 @@ func NewBRCZeroApp(
 		auth.NewAppModule(app.AccountKeeper),
 		bank.NewAppModule(app.BankKeeper, app.AccountKeeper, app.SupplyKeeper),
 		supply.NewAppModule(app.SupplyKeeper, app.AccountKeeper),
+		gov.NewAppModule(app.GovKeeper, app.SupplyKeeper),
 		staking.NewAppModule(app.StakingKeeper, app.AccountKeeper, app.SupplyKeeper),
 		slashing.NewAppModule(app.SlashingKeeper, app.AccountKeeper, app.StakingKeeper),
 		params.NewAppModule(app.ParamsKeeper), // NOTE: only used for simulation to generate randomized param change proposals
