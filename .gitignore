@@ -83,3 +83,5 @@ dump.rdb
 dev/wasm/vmbridge-erc20/.cargo
 dev/wasm/vmbridge-erc20/artifacts
 dev/wasm/vmbridge-erc20/target
+cache
+regtest
