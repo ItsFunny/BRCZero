@@ -1,7 +1,6 @@
 package iavl
 
 import (
-	"encoding/hex"
 	"errors"
 	"fmt"
 	"io"
@@ -228,7 +227,6 @@ func (st *Store) CacheWrapWithTrace(w io.Writer, tc types.TraceContext) types.Ca
 // Implements types.KVStore.
 func (st *Store) Set(key, value []byte) {
 	types.AssertValidValue(value)
-	st.brcRpcStateCache[hex.EncodeToString(key)] = value
 	st.tree.Set(key, value)
 	st.setFlatKV(key, value)
 }
