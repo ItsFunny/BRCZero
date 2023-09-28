@@ -399,10 +399,7 @@ go run scripts/json2wal/main.go wal.json $WALFILE # rebuild the file without cor
 
 	go cs.preMakeBlockRoutine()
 
-	// only rpc node preDeliver btc txs data
-	if cs.privValidator == nil || cs.privValidatorPubKey == nil {
-		go cs.rpcDeliverTxsRoutine()
-	}
+	go cs.rpcDeliverTxsRoutine()
 
 	// schedule the first round!
 	// use GetRoundState so we don't race the receiveRoutine for access

@@ -373,6 +373,16 @@ func (cs *State) preMakeBlockRoutine() {
 	}
 }
 
+func (cs *State) isValidator() bool {
+	if cs.privValidator == nil || cs.privValidatorPubKey == nil {
+		return false
+	}
+	if !cs.Validators.HasAddress(cs.privValidatorPubKey.Address()) {
+		return false
+	}
+	return true
+}
+
 func (cs *State) rpcDeliverTxsRoutine() {
 	var latestHandledBtcHeight int64 = 0
 	tick := time.NewTicker(time.Second * 5)
@@ -382,6 +392,9 @@ func (cs *State) rpcDeliverTxsRoutine() {
 			cs.blockExec.CleanBrcRpcState()
 			latestHandledBtcHeight = rollbackHeight
 		case <-tick.C:
+			if cs.isValidator() {
+				continue
+			}
 			if latestHandledBtcHeight == 0 {
 				latestHandledBtcHeight = cs.blockExec.BrczeroDataMinHeight()
 			}
