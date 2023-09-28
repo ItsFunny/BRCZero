@@ -258,7 +258,6 @@ func (cs *State) createMockBlock(btcHeight int64, bzd types.BRCZeroData) (block 
 		return
 	}
 
-	//proposerAddr := cs.privValidatorPubKey.Address()
 	proposerAddr := cs.LastValidators.Proposer.PubKey.Address()
 
 	return cs.state.MakeBlockBrc(cs.Height, bzd.Txs, commit, make([]types.Evidence, 0), proposerAddr, btcHeight, bzd.BTCBlockHash)

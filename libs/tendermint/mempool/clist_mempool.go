@@ -417,7 +417,7 @@ func (mem *CListMempool) AddBrczeroData(btcHeight int64, btcBlockHash string, is
 	mem.brczeroMtx.Lock()
 	defer mem.brczeroMtx.Unlock()
 	needRollback := false
-	fmt.Println("AddBrczeroData: len", len(mem.brczeroTxs))
+	var dirtyTxs []int64
 	if bCache, ok := mem.brczeroTxs[btcHeight]; ok {
 		if bCache.BTCBlockHash == btcBlockHash {
 			return nil
@@ -425,7 +425,7 @@ func (mem *CListMempool) AddBrczeroData(btcHeight int64, btcBlockHash string, is
 			needRollback = true
 			for bt, _ := range mem.brczeroTxs {
 				if bt > btcHeight {
-					delete(mem.brczeroTxs, bt)
+					dirtyTxs = append(dirtyTxs, bt)
 				}
 			}
 		}
@@ -442,6 +442,11 @@ func (mem *CListMempool) AddBrczeroData(btcHeight int64, btcBlockHash string, is
 	}
 	if needRollback {
 		mem.brczeroRollbackChan <- btcHeight
+		for _, bt := range dirtyTxs {
+			if bt > btcHeight {
+				delete(mem.brczeroTxs, bt)
+			}
+		}
 	}
 	return nil
 }
