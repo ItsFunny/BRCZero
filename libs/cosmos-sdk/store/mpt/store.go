@@ -262,7 +262,6 @@ func (ms *MptStore) GetBrcRpcState(key []byte) []byte {
 }
 
 func (ms *MptStore) CleanBrcRpcState() {
-	fmt.Println("=======test-CleanBrcRpcState: cache len", len(ms.brcRpcStateCache))
 	ms.brcRpcStateCache = make(map[string][]byte, 0)
 }
 

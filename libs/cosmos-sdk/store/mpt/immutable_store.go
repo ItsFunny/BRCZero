@@ -105,7 +105,6 @@ func (ms *ImmutableMptStore) Delete(key []byte) {
 }
 
 func (ms *ImmutableMptStore) CleanBrcRpcState() {
-	fmt.Println("=======ImmutableMptStore test-CleanBrcRpcState: cache len", len(ms.brcRpcStateCache))
 	ms.brcRpcStateCache = make(map[string][]byte, 0)
 }
 

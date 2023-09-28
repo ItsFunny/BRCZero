@@ -248,7 +248,6 @@ func (blockExec *BlockExecutor) ApplyBlock(
 	blockExec.tryWaitLastBlockSave(block.Height - 1)
 
 	abciResponses, duration, err := blockExec.runAbci(block, deltaInfo)
-	fmt.Println("=========Test-ApplyBlock=======", abciResponses.DeliverTxs)
 
 	// publish event
 	if types.EnableEventBlockTime {

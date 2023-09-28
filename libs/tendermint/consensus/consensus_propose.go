@@ -394,10 +394,6 @@ func (cs *State) addProposalBlockPart(msg *BlockPartMessage, peerID p2p.ID) (add
 			}
 		}
 
-		//
-		//deliverRsp, err := cs.blockExec.DeliverTxsForBrczeroRpc(brczeroData.Txs)
-		//fmt.Println("=========Test-DeliverTx=======", deliverRsp)
-
 		cs.trc.Pin("lastPart")
 		cs.bt.onRecvBlock(height)
 		cs.bt.totalParts = cs.ProposalBlockParts.Total()
