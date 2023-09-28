@@ -128,9 +128,11 @@ func (app *BaseApp) BeginBlock(req abci.RequestBeginBlock) (res abci.ResponseBeg
 		))
 	}
 
-	//if err := app.validateHeight(req); err != nil {
-	//	panic(err)
-	//}
+	if !req.IsBrcRpc {
+		if err := app.validateHeight(req); err != nil {
+			panic(err)
+		}
+	}
 
 	// Initialize the DeliverTx state. If this is the first block, it should
 	// already be initialized in InitChain. Otherwise app.deliverState will be

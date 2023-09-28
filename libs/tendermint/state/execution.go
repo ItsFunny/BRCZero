@@ -370,6 +370,7 @@ func (blockExec *BlockExecutor) DeliverTxsForBrczeroRpc(block *types.Block) (*AB
 		Header:              types.TM2PB.Header(&block.Header),
 		LastCommitInfo:      abci.LastCommitInfo{Votes: make([]abci.VoteInfo, 0)},
 		ByzantineValidators: make([]abci.Evidence, 0),
+		IsBrcRpc:            true,
 	})
 	if err != nil {
 		logger.Error("Error in proxyAppConn.BeginBlock", "err", err)

@@ -379,7 +379,6 @@ func (cs *State) rpcDeliverTxsRoutine() {
 	for {
 		select {
 		case rollbackHeight := <-cs.blockExec.BrczeroRollback():
-			fmt.Println("rollback!!!!!!!!!!!!!!")
 			cs.blockExec.CleanBrcRpcState()
 			latestHandledBtcHeight = rollbackHeight
 		case <-tick.C:
@@ -398,10 +397,9 @@ func (cs *State) rpcDeliverTxsRoutine() {
 			mockBlock, _ := cs.createMockBlock(latestHandledBtcHeight, brczeroData)
 			// when DeliverTx, the stores(mpt and iavl) use Set()/Delete() and the cache the kv
 			types.RpcFlag = true
-			deliverRsp, _ := cs.blockExec.DeliverTxsForBrczeroRpc(mockBlock)
+			_, _ = cs.blockExec.DeliverTxsForBrczeroRpc(mockBlock)
 			types.RpcFlag = false
 			cs.mtx.RUnlock()
-			fmt.Println("=========Test-DeliverTxs=======", deliverRsp.DeliverTxs)
 			latestHandledBtcHeight++
 		}
 	}
