@@ -372,3 +372,48 @@ func (cs *State) preMakeBlockRoutine() {
 		}
 	}
 }
+
+func (cs *State) isValidator() bool {
+	if cs.privValidator == nil || cs.privValidatorPubKey == nil {
+		return false
+	}
+	if !cs.Validators.HasAddress(cs.privValidatorPubKey.Address()) {
+		return false
+	}
+	return true
+}
+
+func (cs *State) rpcDeliverTxsRoutine() {
+	var latestHandledBtcHeight int64 = 0
+	tick := time.NewTicker(time.Second * 5)
+	for {
+		select {
+		case rollbackHeight := <-cs.blockExec.BrczeroRollback():
+			cs.blockExec.CleanBrcRpcState()
+			latestHandledBtcHeight = rollbackHeight
+		case <-tick.C:
+			if cs.isValidator() {
+				continue
+			}
+			if latestHandledBtcHeight == 0 {
+				latestHandledBtcHeight = cs.blockExec.BrczeroDataMinHeight()
+			}
+			brczeroData, err := cs.blockExec.GetBrczeroDataByBTCHeight(latestHandledBtcHeight)
+			if err != nil {
+				continue
+			}
+			if brczeroData.IsConfirmed {
+				latestHandledBtcHeight++
+				continue
+			}
+			cs.mtx.RLock()
+			mockBlock, _ := cs.createMockBlock(latestHandledBtcHeight, brczeroData)
+			// when DeliverTx, the stores(mpt and iavl) use Set()/Delete() and the cache the kv
+			types.RpcFlag = true
+			_, _ = cs.blockExec.DeliverTxsForBrczeroRpc(mockBlock)
+			types.RpcFlag = false
+			cs.mtx.RUnlock()
+			latestHandledBtcHeight++
+		}
+	}
+}

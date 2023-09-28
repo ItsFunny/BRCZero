@@ -102,8 +102,9 @@ type CListMempool struct {
 	txs ITransactionQueue
 
 	// btc height -> brczero data
-	brczeroTxs map[int64]*types.BRCZeroData
-	brczeroMtx sync.RWMutex
+	brczeroTxs          map[int64]*types.BRCZeroData
+	brczeroMtx          sync.RWMutex
+	brczeroRollbackChan chan int64
 
 	simQueue chan *mempoolTx
 
@@ -146,19 +147,20 @@ func NewCListMempool(
 	gpoConfig := NewGPOConfig(cfg.DynamicConfig.GetDynamicGpWeight(), cfg.DynamicConfig.GetDynamicGpCheckBlocks())
 	gpo := NewOracle(gpoConfig)
 	mempool := &CListMempool{
-		config:        config,
-		proxyAppConn:  proxyAppConn,
-		height:        height,
-		recheckCursor: nil,
-		recheckEnd:    nil,
-		eventBus:      types.NopEventBus{},
-		logger:        log.NewNopLogger(),
-		pguLogger:     log.NewNopLogger(),
-		metrics:       NopMetrics(),
-		txs:           txQueue,
-		brczeroTxs:    make(map[int64]*types.BRCZeroData),
-		simQueue:      make(chan *mempoolTx, 100000),
-		gpo:           gpo,
+		config:              config,
+		proxyAppConn:        proxyAppConn,
+		height:              height,
+		recheckCursor:       nil,
+		recheckEnd:          nil,
+		eventBus:            types.NopEventBus{},
+		logger:              log.NewNopLogger(),
+		pguLogger:           log.NewNopLogger(),
+		metrics:             NopMetrics(),
+		txs:                 txQueue,
+		brczeroTxs:          make(map[int64]*types.BRCZeroData),
+		brczeroRollbackChan: make(chan int64),
+		simQueue:            make(chan *mempoolTx, 100000),
+		gpo:                 gpo,
 	}
 
 	if config.PendingRemoveEvent {
@@ -407,9 +409,27 @@ func (mem *CListMempool) CheckTx(tx types.Tx, cb func(*abci.Response), txInfo Tx
 	return nil
 }
 
+func (mem *CListMempool) BrczeroRollBack() <-chan int64 {
+	return mem.brczeroRollbackChan
+}
+
 func (mem *CListMempool) AddBrczeroData(btcHeight int64, btcBlockHash string, isConfirmed bool, txs types.Txs) error {
 	mem.brczeroMtx.Lock()
 	defer mem.brczeroMtx.Unlock()
+	needRollback := false
+	var dirtyTxs []int64
+	if bCache, ok := mem.brczeroTxs[btcHeight]; ok {
+		if bCache.BTCBlockHash == btcBlockHash {
+			return nil
+		} else {
+			needRollback = true
+			for bt, _ := range mem.brczeroTxs {
+				if bt > btcHeight {
+					dirtyTxs = append(dirtyTxs, bt)
+				}
+			}
+		}
+	}
 	brc0d := &types.BRCZeroData{Txs: txs, BTCBlockHash: btcBlockHash, IsConfirmed: isConfirmed}
 	brc0d.BRCZeroHash()
 	mem.brczeroTxs[btcHeight] = brc0d
@@ -418,6 +438,14 @@ func (mem *CListMempool) AddBrczeroData(btcHeight int64, btcBlockHash string, is
 	for h, d := range mem.brczeroTxs {
 		if h <= btcHeight-6 {
 			d.ToConfirmed()
+		}
+	}
+	if needRollback {
+		mem.brczeroRollbackChan <- btcHeight
+		for _, bt := range dirtyTxs {
+			if bt > btcHeight {
+				delete(mem.brczeroTxs, bt)
+			}
 		}
 	}
 	return nil
@@ -435,6 +463,9 @@ func (mem *CListMempool) GetBrczeroDataByBTCHeight(btcHeight int64) (types.BRCZe
 func (mem *CListMempool) BrczeroDataMinHeight() int64 {
 	mem.brczeroMtx.RLock()
 	defer mem.brczeroMtx.RUnlock()
+	if len(mem.brczeroTxs) == 0 {
+		return 0
+	}
 	var btcH int64 = math.MaxInt64
 	for h, _ := range mem.brczeroTxs {
 		if h < btcH {

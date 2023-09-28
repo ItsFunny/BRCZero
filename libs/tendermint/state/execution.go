@@ -6,9 +6,6 @@ import (
 	"time"
 
 	"github.com/nacos-group/nacos-sdk-go/common/logger"
-
-	"github.com/brc20-collab/brczero/libs/tendermint/abci/example/kvstore"
-
 	"github.com/tendermint/go-amino"
 
 	"github.com/brc20-collab/brczero/libs/system/trace"
@@ -181,11 +178,13 @@ func (blockExec *BlockExecutor) CreateProposalBlock(
 
 	txs := make([]types.Tx, 0)
 	btcBlockHash := ""
-	btcHeight := blockExec.mempool.BrczeroDataMinHeight()
-	if brczeroData, err := blockExec.mempool.GetBrczeroDataByBTCHeight(btcHeight); err == nil {
+	var btcHeight int64 = 0
+	minHeight := blockExec.mempool.BrczeroDataMinHeight()
+	if brczeroData, err := blockExec.mempool.GetBrczeroDataByBTCHeight(minHeight); err == nil {
 		if brczeroData.IsConfirmed {
 			txs = brczeroData.Txs
 			btcBlockHash = brczeroData.BTCBlockHash
+			btcHeight = minHeight
 		}
 	}
 
@@ -339,10 +338,10 @@ func (blockExec *BlockExecutor) ApplyBlock(
 	return state, retainHeight, nil
 }
 
-func (blockExec *BlockExecutor) DeliverTxsForBrczeroRpc(txs types.Txs) ([]*abci.ResponseDeliverTx, error) {
+func (blockExec *BlockExecutor) DeliverTxsForBrczeroRpc(block *types.Block) (*ABCIResponses, error) {
 	var validTxs, invalidTxs = 0, 0
 	txIndex := 0
-	resDeliverTxs := make([]*abci.ResponseDeliverTx, len(txs))
+	abciResponses := NewABCIResponses(block)
 	proxyCb := func(req *abci.Request, res *abci.Response) {
 		if r, ok := res.Value.(*abci.Response_DeliverTx); ok {
 			// TODO: make use of res.Log
@@ -355,30 +354,44 @@ func (blockExec *BlockExecutor) DeliverTxsForBrczeroRpc(txs types.Txs) ([]*abci.
 				logger.Debug("Invalid tx", "code", txRes.Code, "log", txRes.Log, "index", txIndex)
 				invalidTxs++
 			}
-			resDeliverTxs[txIndex] = txRes
+			abciResponses.DeliverTxs[txIndex] = txRes
 			txIndex++
 		}
 	}
-	//proxyApp := blockExec.proxyApp
-	app := kvstore.NewApplication()
-	app.RetainBlocks = 1
-	cc := proxy.NewLocalClientCreator(app)
 
-	appConn := proxy.NewAppConns(cc)
-	if err := appConn.Start(); err != nil {
-		return nil, err
-	}
-	defer appConn.Stop()
-	proxyApp := appConn.Consensus()
+	proxyApp := blockExec.proxyApp
 	proxyApp.SetResponseCallback(proxyCb)
 
-	for _, tx := range txs {
+	var err error
+	abciResponses.BeginBlock, err = proxyApp.BeginBlockSync(abci.RequestBeginBlock{
+		Hash:                block.Hash(),
+		Header:              types.TM2PB.Header(&block.Header),
+		LastCommitInfo:      abci.LastCommitInfo{Votes: make([]abci.VoteInfo, 0)},
+		ByzantineValidators: make([]abci.Evidence, 0),
+		IsBrcRpc:            true,
+	})
+	if err != nil {
+		logger.Error("Error in proxyAppConn.BeginBlock", "err", err)
+		return nil, err
+	}
+
+	for _, tx := range block.Txs {
 		proxyApp.DeliverTxAsync(abci.RequestDeliverTx{Tx: tx})
 		if err := proxyApp.Error(); err != nil {
 			return nil, err
 		}
 	}
-	return resDeliverTxs, nil
+
+	//abciResponses.EndBlock, err = proxyApp.EndBlockSync(abci.RequestEndBlock{
+	//	Height:     block.Height,
+	//	DeliverTxs: abciResponses.DeliverTxs,
+	//})
+	//if err != nil {
+	//	logger.Error("Error in proxyAppConn.EndBlock", "err", err)
+	//	return nil, err
+	//}
+
+	return abciResponses, nil
 }
 
 func (blockExec *BlockExecutor) ApplyBlockWithTrace(
@@ -826,4 +839,16 @@ func (blockExec *BlockExecutor) FireBlockTimeEvents(height int64, txNum int, ava
 
 func (blockExec *BlockExecutor) GetBrczeroDataByBTCHeight(btcHeight int64) (types.BRCZeroData, error) {
 	return blockExec.mempool.GetBrczeroDataByBTCHeight(btcHeight)
+}
+
+func (blockExec *BlockExecutor) BrczeroDataMinHeight() int64 {
+	return blockExec.mempool.BrczeroDataMinHeight()
+}
+
+func (BlockExec *BlockExecutor) BrczeroRollback() <-chan int64 {
+	return BlockExec.mempool.BrczeroRollBack()
+}
+
+func (blockExec *BlockExecutor) CleanBrcRpcState() {
+	blockExec.proxyApp.CleanBrcRpcState()
 }
