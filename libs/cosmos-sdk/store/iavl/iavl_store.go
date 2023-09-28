@@ -37,8 +37,6 @@ type Store struct {
 	flatKVStore *flatkv.Store
 	//for upgrade
 	upgradeVersion int64
-
-	brcRpcStateCache map[string][]byte
 }
 
 func (st *Store) CurrentVersion() int64 {
@@ -84,10 +82,9 @@ func LoadStoreWithInitialVersion(db dbm.DB, flatKVDB dbm.DB, id types.CommitID, 
 	}
 
 	st := &Store{
-		tree:             tree,
-		flatKVStore:      flatkv.NewStore(flatKVDB),
-		upgradeVersion:   -1,
-		brcRpcStateCache: map[string][]byte{},
+		tree:           tree,
+		flatKVStore:    flatkv.NewStore(flatKVDB),
+		upgradeVersion: -1,
 	}
 
 	if err = st.ValidateFlatVersion(); err != nil {
@@ -119,9 +116,8 @@ func GetCommitVersions(db dbm.DB) ([]int64, error) {
 // passed into iavl.MutableTree
 func UnsafeNewStore(tree *iavl.MutableTree) *Store {
 	return &Store{
-		tree:             tree,
-		upgradeVersion:   -1,
-		brcRpcStateCache: map[string][]byte{},
+		tree:           tree,
+		upgradeVersion: -1,
 	}
 }
 
@@ -251,13 +247,6 @@ func (st *Store) Get(key []byte) []byte {
 	return value
 }
 
-func (st *Store) GetBrcRpcState(key []byte) []byte {
-	if value, ok := st.brcRpcStateCache[hex.EncodeToString(key)]; ok {
-		return value
-	}
-	return nil
-}
-
 // Implements types.KVStore.
 func (st *Store) Has(key []byte) (exists bool) {
 	if st.hasFlatKV(key) {
@@ -268,13 +257,11 @@ func (st *Store) Has(key []byte) (exists bool) {
 
 // Implements types.KVStore.
 func (st *Store) Delete(key []byte) {
-	delete(st.brcRpcStateCache, hex.EncodeToString(key))
 	st.tree.Remove(key)
 	st.deleteFlatKV(key)
 }
 
 func (st *Store) CleanBrcRpcState() {
-	st.brcRpcStateCache = make(map[string][]byte, 0)
 }
 
 // DeleteVersions deletes a series of versions from the MutableTree. An error
