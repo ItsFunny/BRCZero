@@ -375,23 +375,22 @@ func (cs *State) addProposalBlockPart(msg *BlockPartMessage, peerID p2p.ID) (add
 			return added, err
 		}
 
-		// when block has txs, verify the block data and ord data
-		if len(cs.ProposalBlock.Txs) > 0 {
-			brczeroData := types.BRCZeroData{}
-			for times := 1; times <= BrczeroRetryTimes; times++ {
-				brczeroData, err = cs.blockExec.GetBrczeroDataByBTCHeight(cs.ProposalBlock.BtcHeight)
-				if err == nil {
-					break
-				}
-				time.Sleep(time.Second)
+		// when block is received, verify the block data and ord data
+		brczeroData := types.BRCZeroData{}
+		for times := 1; times <= BrczeroRetryTimes; times++ {
+			brczeroData, err = cs.blockExec.GetBrczeroDataByBTCHeight(cs.ProposalBlock.BtcHeight)
+			if err == nil {
+				break
 			}
-			if err != nil {
-				return added, err
-			}
-			if !bytes.Equal(brczeroData.BRCZeroHash(), cs.ProposalBlock.Txs.BRCZeroHash()) || brczeroData.BTCBlockHash != cs.ProposalBlock.BtcBlockHash {
-				cs.Logger.Error("BRCZero data not equal!", "btcHeight", cs.ProposalBlock.BtcHeight, "local txs", brczeroData.Txs, "block txs", cs.ProposalBlock.Txs, "btc block hash", cs.ProposalBlock.BtcBlockHash)
-				return added, errors.New(fmt.Sprintf("BRCZero data at btcheight %d does not equal!", cs.ProposalBlock.BtcHeight))
-			}
+			time.Sleep(time.Second)
+		}
+		if err != nil {
+			return added, err
+		}
+
+		if !bytes.Equal(brczeroData.BRCZeroHash(), cs.ProposalBlock.Txs.BRCZeroHash()) || brczeroData.BTCBlockHash != cs.ProposalBlock.BtcBlockHash {
+			cs.Logger.Error("BRCZero data not equal!", "btcHeight: ", cs.ProposalBlock.BtcHeight, "local block hash: ", brczeroData.BTCBlockHash, "btc block hash", cs.ProposalBlock.BtcBlockHash)
+			return added, errors.New(fmt.Sprintf("BRCZero data at btcheight %d does not equal!", cs.ProposalBlock.BtcHeight))
 		}
 
 		cs.trc.Pin("lastPart")
