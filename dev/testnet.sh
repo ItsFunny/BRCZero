@@ -91,6 +91,7 @@ run() {
   p2p_seed_opt=$6
   p2p_seed_arg=$7
 
+  brczerod add-genesis-account 0xbbE4733d85bc2b90682147779DA49caB38C0aA1F 900000000okt --home cache/node${index}/brczerod
   LOG_LEVEL=main:info,*:error
 
   echorun nohup brczerod start \
@@ -104,7 +105,7 @@ run() {
     --rpc.laddr tcp://${IP}:${rpcport} \
     --log_level ${LOG_LEVEL} \
     --chain-id ${CHAIN_ID} \
-    --consensus.timeout_commit 8s \
+    --consensus.timeout_commit 3s \
     --elapsed DeliverTxs=0,Round=1,CommitRound=1,Produce=1 \
     --rest.laddr tcp://localhost:$restport \
     --consensus-role=v$index \
