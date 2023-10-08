@@ -6,6 +6,9 @@ import (
 	"sync"
 	"time"
 
+	"github.com/pkg/errors"
+	"github.com/spf13/viper"
+
 	"github.com/brc20-collab/brczero/libs/system/trace"
 	cfg "github.com/brc20-collab/brczero/libs/tendermint/config"
 	cstypes "github.com/brc20-collab/brczero/libs/tendermint/consensus/types"
@@ -16,8 +19,6 @@ import (
 	"github.com/brc20-collab/brczero/libs/tendermint/p2p"
 	sm "github.com/brc20-collab/brczero/libs/tendermint/state"
 	"github.com/brc20-collab/brczero/libs/tendermint/types"
-	"github.com/pkg/errors"
-	"github.com/spf13/viper"
 )
 
 //-----------------------------------------------------------------------------
@@ -166,6 +167,8 @@ type State struct {
 
 	preBlockTaskChan chan *preBlockTask
 	taskResultChan   chan *preBlockTaskRes
+
+	latestBTCHeight int64
 }
 
 // preBlockSignal

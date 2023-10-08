@@ -167,6 +167,7 @@ func (blockExec *BlockExecutor) CreateProposalBlock(
 	height int64,
 	state State, commit *types.Commit,
 	proposerAddr []byte,
+	latestBH int64,
 ) (*types.Block, *types.PartSet) {
 
 	maxBytes := state.ConsensusParams.Block.MaxBytes
@@ -182,9 +183,13 @@ func (blockExec *BlockExecutor) CreateProposalBlock(
 	minHeight := blockExec.mempool.BrczeroDataMinHeight()
 	if brczeroData, err := blockExec.mempool.GetBrczeroDataByBTCHeight(minHeight); err == nil {
 		if brczeroData.IsConfirmed {
-			txs = brczeroData.Txs
-			btcBlockHash = brczeroData.BTCBlockHash
-			btcHeight = minHeight
+			if minHeight <= latestBH {
+				blockExec.mempool.DelBrczeroDataByBTCHeight(minHeight)
+			} else if minHeight == latestBH+1 || latestBH == 0 {
+				txs = brczeroData.Txs
+				btcBlockHash = brczeroData.BTCBlockHash
+				btcHeight = minHeight
+			}
 		}
 	}
 
