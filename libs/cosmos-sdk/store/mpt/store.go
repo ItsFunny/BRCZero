@@ -217,6 +217,7 @@ func (ms *MptStore) CacheWrapWithTrace(w io.Writer, tc types.TraceContext) types
 }
 
 func (ms *MptStore) Get(key []byte) []byte {
+	fmt.Println("=========MptStore-Get, rpcFlag", tmtypes.RpcFlag)
 	if tmtypes.RpcFlag != tmtypes.RpcApplyBlockMode {
 		if value := ms.GetBrcRpcState(key); value != nil {
 			return value

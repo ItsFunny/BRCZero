@@ -400,7 +400,10 @@ func (cs *State) rpcDeliverTxs(btcHeight int64) {
 		mockBlock, _ := cs.createMockBlock(h, brczeroData)
 		// when DeliverTx, the stores(mpt and iavl) use Set()/Delete() and the cache the kv
 		types.RpcFlag = types.RpcDeliverTxsMode
+		fmt.Println("========deliverTxs-before, rpcFlag", types.RpcFlag)
 		_, _ = cs.blockExec.DeliverTxsForBrczeroRpc(mockBlock)
+		fmt.Println("========deliverTxs-after, rpcFlag", types.RpcFlag)
+
 		types.RpcFlag = types.RpcDefaultMode
 
 		cs.blockExec.SetBrcDataDelivered(h, true)

@@ -218,6 +218,9 @@ func (blockExec *BlockExecutor) ValidateBlock(state State, block *types.Block) e
 // It takes a blockID to avoid recomputing the parts hash.
 func (blockExec *BlockExecutor) ApplyBlock(
 	state State, blockID types.BlockID, block *types.Block) (State, int64, error) {
+
+	types.RpcFlag = types.RpcApplyBlockMode
+
 	if ApplyBlockPprofTime >= 0 {
 		f, t := PprofStart()
 		defer PprofEnd(int(block.Height), f, t)
@@ -254,9 +257,9 @@ func (blockExec *BlockExecutor) ApplyBlock(
 	//wait till the last block async write be saved
 	blockExec.tryWaitLastBlockSave(block.Height - 1)
 
-	types.RpcFlag = types.RpcApplyBlockMode
+	fmt.Println("========applyBlock-before, rpcFlag", types.RpcFlag)
 	abciResponses, duration, err := blockExec.runAbci(block, deltaInfo)
-	types.RpcFlag = types.RpcDefaultMode
+	fmt.Println("========applyBlock-after, rpcFlag", types.RpcFlag)
 
 	// publish event
 	if types.EnableEventBlockTime {
@@ -343,6 +346,8 @@ func (blockExec *BlockExecutor) ApplyBlock(
 			}
 		}
 	}
+
+	types.RpcFlag = types.RpcDefaultMode
 
 	return state, retainHeight, nil
 }
