@@ -391,7 +391,7 @@ func (cs *State) rpcDeliverTxs(btcHeight int64) {
 		btcHeight = cs.blockExec.BrczeroDataMinHeight()
 	}
 
-	for h := btcHeight + 1; h <= btcHeight+6; h++ {
+	for h := btcHeight; h <= btcHeight+5; h++ {
 		brczeroData, err := cs.blockExec.GetBrczeroDataByBTCHeight(h)
 		if err != nil || brczeroData.IsConfirmed || brczeroData.Delivered {
 			continue
@@ -406,39 +406,4 @@ func (cs *State) rpcDeliverTxs(btcHeight int64) {
 		cs.blockExec.SetBrcDataDelivered(h, true)
 	}
 
-}
-
-func (cs *State) rpcDeliverTxsRoutine() {
-	var latestHandledBtcHeight int64 = 0
-	tick := time.NewTicker(time.Second * 5)
-	for {
-		select {
-		case rollbackHeight := <-cs.blockExec.BrczeroRollback():
-			cs.blockExec.CleanBrcRpcState()
-			latestHandledBtcHeight = rollbackHeight
-		case <-tick.C:
-			if cs.isValidator() {
-				continue
-			}
-			if latestHandledBtcHeight == 0 {
-				latestHandledBtcHeight = cs.blockExec.BrczeroDataMinHeight()
-			}
-			brczeroData, err := cs.blockExec.GetBrczeroDataByBTCHeight(latestHandledBtcHeight)
-			if err != nil {
-				continue
-			}
-			if brczeroData.IsConfirmed {
-				latestHandledBtcHeight++
-				continue
-			}
-			cs.mtx.RLock()
-			mockBlock, _ := cs.createMockBlock(latestHandledBtcHeight, brczeroData)
-			// when DeliverTx, the stores(mpt and iavl) use Set()/Delete() and the cache the kv
-			types.RpcFlag = types.RpcDeliverTxsMode
-			_, _ = cs.blockExec.DeliverTxsForBrczeroRpc(mockBlock)
-			types.RpcFlag = types.RpcDefaultMode
-			cs.mtx.RUnlock()
-			latestHandledBtcHeight++
-		}
-	}
 }
