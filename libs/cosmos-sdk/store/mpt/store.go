@@ -217,9 +217,12 @@ func (ms *MptStore) CacheWrapWithTrace(w io.Writer, tc types.TraceContext) types
 }
 
 func (ms *MptStore) Get(key []byte) []byte {
-	if value := ms.GetBrcRpcState(key); value != nil {
-		return value
+	if tmtypes.RpcFlag != tmtypes.RpcApplyBlockMode {
+		if value := ms.GetBrcRpcState(key); value != nil {
+			return value
+		}
 	}
+
 	switch mptKeyType(key) {
 	case storageType:
 		addr, stateRoot, realKey := decodeAddressStorageInfo(key)
@@ -297,7 +300,7 @@ func (ms *MptStore) Set(key, value []byte) {
 
 	ms.brcRpcStateCache[hex.EncodeToString(key)] = value
 
-	if tmtypes.RpcFlag {
+	if tmtypes.RpcFlag == tmtypes.RpcDeliverTxsMode {
 		return
 	}
 

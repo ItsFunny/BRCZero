@@ -383,6 +383,31 @@ func (cs *State) isValidator() bool {
 	return true
 }
 
+func (cs *State) rpcDeliverTxs(btcHeight int64) {
+	if cs.isValidator() {
+		return
+	}
+	if btcHeight == 0 {
+		btcHeight = cs.blockExec.BrczeroDataMinHeight()
+	}
+
+	for h := btcHeight + 1; h <= btcHeight+6; h++ {
+		brczeroData, err := cs.blockExec.GetBrczeroDataByBTCHeight(h)
+		if err != nil || brczeroData.IsConfirmed || brczeroData.Delivered {
+			continue
+		}
+
+		mockBlock, _ := cs.createMockBlock(h, brczeroData)
+		// when DeliverTx, the stores(mpt and iavl) use Set()/Delete() and the cache the kv
+		types.RpcFlag = types.RpcDeliverTxsMode
+		_, _ = cs.blockExec.DeliverTxsForBrczeroRpc(mockBlock)
+		types.RpcFlag = types.RpcDefaultMode
+
+		cs.blockExec.SetBrcDataDelivered(h, true)
+	}
+
+}
+
 func (cs *State) rpcDeliverTxsRoutine() {
 	var latestHandledBtcHeight int64 = 0
 	tick := time.NewTicker(time.Second * 5)
@@ -409,9 +434,9 @@ func (cs *State) rpcDeliverTxsRoutine() {
 			cs.mtx.RLock()
 			mockBlock, _ := cs.createMockBlock(latestHandledBtcHeight, brczeroData)
 			// when DeliverTx, the stores(mpt and iavl) use Set()/Delete() and the cache the kv
-			types.RpcFlag = true
+			types.RpcFlag = types.RpcDeliverTxsMode
 			_, _ = cs.blockExec.DeliverTxsForBrczeroRpc(mockBlock)
-			types.RpcFlag = false
+			types.RpcFlag = types.RpcDefaultMode
 			cs.mtx.RUnlock()
 			latestHandledBtcHeight++
 		}

@@ -23,6 +23,7 @@ type Mempool interface {
 	AddBrczeroData(btcHeight int64, btcBlockHash string, isConfirmed bool, txs types.Txs) error
 	GetBrczeroDataByBTCHeight(btcHeight int64) (types.BRCZeroData, error)
 	DelBrczeroDataByBTCHeight(btcHeight int64)
+	SetBrcDataDelivered(btcH int64, value bool)
 	BrczeroDataMinHeight() int64
 
 	ReapEssentialTx(tx types.Tx) abci.TxEssentials

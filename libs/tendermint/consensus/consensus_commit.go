@@ -257,6 +257,8 @@ func (cs *State) finalizeCommit(height int64) {
 		return
 	}
 
+	cs.rpcDeliverTxs(block.BtcHeight + 1)
+
 	//reset offset after commitGap
 	if iavl.EnableAsyncCommit &&
 		height%iavlcfg.DynamicConfig.GetCommitGapHeight() == iavl.GetFinalCommitGapOffset() {

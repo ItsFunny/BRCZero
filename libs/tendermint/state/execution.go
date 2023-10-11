@@ -123,6 +123,8 @@ func NewBlockExecutor(
 
 	res.initAsyncDBContext()
 
+	go res.RpcRollbackRoutine()
+
 	return res
 }
 
@@ -252,7 +254,9 @@ func (blockExec *BlockExecutor) ApplyBlock(
 	//wait till the last block async write be saved
 	blockExec.tryWaitLastBlockSave(block.Height - 1)
 
+	types.RpcFlag = types.RpcApplyBlockMode
 	abciResponses, duration, err := blockExec.runAbci(block, deltaInfo)
+	types.RpcFlag = types.RpcDefaultMode
 
 	// publish event
 	if types.EnableEventBlockTime {
@@ -850,10 +854,23 @@ func (blockExec *BlockExecutor) BrczeroDataMinHeight() int64 {
 	return blockExec.mempool.BrczeroDataMinHeight()
 }
 
+func (BlockExec *BlockExecutor) SetBrcDataDelivered(btcH int64, value bool) {
+	BlockExec.mempool.SetBrcDataDelivered(btcH, value)
+}
+
 func (BlockExec *BlockExecutor) BrczeroRollback() <-chan int64 {
 	return BlockExec.mempool.BrczeroRollBack()
 }
 
 func (blockExec *BlockExecutor) CleanBrcRpcState() {
 	blockExec.proxyApp.CleanBrcRpcState()
+}
+
+func (blockExec *BlockExecutor) RpcRollbackRoutine() {
+	for {
+		select {
+		case <-blockExec.BrczeroRollback():
+			blockExec.CleanBrcRpcState()
+		}
+	}
 }
