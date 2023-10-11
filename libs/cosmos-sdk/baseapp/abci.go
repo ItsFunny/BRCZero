@@ -137,7 +137,7 @@ func (app *BaseApp) BeginBlock(req abci.RequestBeginBlock) (res abci.ResponseBeg
 	// Initialize the DeliverTx state. If this is the first block, it should
 	// already be initialized in InitChain. Otherwise app.deliverState will be
 	// nil, since it is reset on Commit.
-	if req.Header.Height > 1+tmtypes.GetStartBlockHeight() {
+	if req.Header.Height > 1+tmtypes.GetStartBlockHeight() || req.IsBrcRpc {
 		if app.deliverState != nil {
 			app.logger.Info(
 				"deliverState was not reset by BaseApp.Commit due to the previous prerun task being stopped",
