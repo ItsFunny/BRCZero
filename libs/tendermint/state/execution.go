@@ -391,14 +391,14 @@ func (blockExec *BlockExecutor) DeliverTxsForBrczeroRpc(block *types.Block) (*AB
 		}
 	}
 
-	//abciResponses.EndBlock, err = proxyApp.EndBlockSync(abci.RequestEndBlock{
-	//	Height:     block.Height,
-	//	DeliverTxs: abciResponses.DeliverTxs,
-	//})
-	//if err != nil {
-	//	logger.Error("Error in proxyAppConn.EndBlock", "err", err)
-	//	return nil, err
-	//}
+	abciResponses.EndBlock, err = proxyApp.EndBlockSync(abci.RequestEndBlock{
+		Height:     block.Height,
+		DeliverTxs: abciResponses.DeliverTxs,
+	})
+	if err != nil {
+		logger.Error("Error in proxyAppConn.EndBlock", "err", err)
+		return nil, err
+	}
 
 	return abciResponses, nil
 }
