@@ -219,8 +219,6 @@ func (blockExec *BlockExecutor) ValidateBlock(state State, block *types.Block) e
 func (blockExec *BlockExecutor) ApplyBlock(
 	state State, blockID types.BlockID, block *types.Block) (State, int64, error) {
 
-	types.RpcFlag = types.RpcApplyBlockMode
-
 	if ApplyBlockPprofTime >= 0 {
 		f, t := PprofStart()
 		defer PprofEnd(int(block.Height), f, t)
@@ -258,7 +256,9 @@ func (blockExec *BlockExecutor) ApplyBlock(
 	blockExec.tryWaitLastBlockSave(block.Height - 1)
 
 	fmt.Println("========applyBlock-before, rpcFlag", types.RpcFlag)
+	types.RpcFlag = types.RpcApplyBlockMode
 	abciResponses, duration, err := blockExec.runAbci(block, deltaInfo)
+	types.RpcFlag = types.RpcDefaultMode
 	fmt.Println("========applyBlock-after, rpcFlag", types.RpcFlag)
 
 	// publish event
@@ -346,8 +346,6 @@ func (blockExec *BlockExecutor) ApplyBlock(
 			}
 		}
 	}
-
-	types.RpcFlag = types.RpcDefaultMode
 
 	return state, retainHeight, nil
 }
