@@ -3,14 +3,15 @@ package consensus
 import (
 	"bytes"
 	"fmt"
+	"reflect"
+	"runtime/debug"
+	"time"
+
 	cfg "github.com/brc20-collab/brczero/libs/tendermint/config"
 	cstypes "github.com/brc20-collab/brczero/libs/tendermint/consensus/types"
 	"github.com/brc20-collab/brczero/libs/tendermint/libs/fail"
 	"github.com/brc20-collab/brczero/libs/tendermint/types"
 	tmtime "github.com/brc20-collab/brczero/libs/tendermint/types/time"
-	"reflect"
-	"runtime/debug"
-	"time"
 )
 
 //-----------------------------------------
@@ -383,37 +384,28 @@ func (cs *State) isValidator() bool {
 	return true
 }
 
-func (cs *State) rpcDeliverTxsRoutine() {
-	var latestHandledBtcHeight int64 = 0
-	tick := time.NewTicker(time.Second * 5)
-	for {
-		select {
-		case rollbackHeight := <-cs.blockExec.BrczeroRollback():
-			cs.blockExec.CleanBrcRpcState()
-			latestHandledBtcHeight = rollbackHeight
-		case <-tick.C:
-			if cs.isValidator() {
-				continue
-			}
-			if latestHandledBtcHeight == 0 {
-				latestHandledBtcHeight = cs.blockExec.BrczeroDataMinHeight()
-			}
-			brczeroData, err := cs.blockExec.GetBrczeroDataByBTCHeight(latestHandledBtcHeight)
-			if err != nil {
-				continue
-			}
-			if brczeroData.IsConfirmed {
-				latestHandledBtcHeight++
-				continue
-			}
-			cs.mtx.RLock()
-			mockBlock, _ := cs.createMockBlock(latestHandledBtcHeight, brczeroData)
-			// when DeliverTx, the stores(mpt and iavl) use Set()/Delete() and the cache the kv
-			types.RpcFlag = true
-			_, _ = cs.blockExec.DeliverTxsForBrczeroRpc(mockBlock)
-			types.RpcFlag = false
-			cs.mtx.RUnlock()
-			latestHandledBtcHeight++
-		}
+func (cs *State) rpcDeliverTxs(btcHeight int64) {
+	if cs.isValidator() {
+		return
 	}
+	if btcHeight == 0 {
+		btcHeight = cs.blockExec.BrczeroDataMinHeight()
+	}
+
+	for h := btcHeight; h <= btcHeight+5; h++ {
+		brczeroData, err := cs.blockExec.GetBrczeroDataByBTCHeight(h)
+		if err != nil || brczeroData.IsConfirmed || brczeroData.Delivered {
+			continue
+		}
+
+		mockBlock, _ := cs.createMockBlock(h, brczeroData)
+		// when DeliverTx, the stores(mpt and iavl) use Set()/Delete() and the cache the kv
+		types.RpcFlag = types.RpcDeliverTxsMode
+		_, _ = cs.blockExec.DeliverTxsForBrczeroRpc(mockBlock)
+
+		types.RpcFlag = types.RpcDefaultMode
+
+		cs.blockExec.SetBrcDataDelivered(h, true)
+	}
+
 }

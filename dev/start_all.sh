@@ -8,7 +8,7 @@ set -a
 set -m
 
 echo "************* Start brczero node... *************"
-./testnet.sh -s -i -n 4 # -r 1
+./testnet.sh -s -i -n 5 -r 1
 ## val0 26656  26657  8545
 ## val1 26756  26757  8645
 ## val2 26856  26857  8745
@@ -76,15 +76,15 @@ nohup ./target/debug/ord \
 --first-brczero-height=120 \
 server --http-port=83 >/dev/null 2>&1 &
 
-#rm -rf ./_cache5
-#nohup ./target/debug/ord \
-# --log-level=DEBUG \
-# --data-dir=./_cache5 \
-# --rpc-url=http://localhost:18443 \
-# --regtest \
-# --bitcoin-rpc-user bitcoinrpc \
-# --bitcoin-rpc-pass bitcoinrpc \
-# --brczero-rpc-url=http://127.0.0.1:27057 \
-# --first-brczero-height=120 \
-# server --http-port=84 >/dev/null 2>&1 &
-#
+rm -rf ./_cache5
+nohup ./target/debug/ord \
+ --log-level=DEBUG \
+ --data-dir=./_cache5 \
+ --rpc-url=http://localhost:18443 \
+ --regtest \
+ --bitcoin-rpc-user bitcoinrpc \
+ --bitcoin-rpc-pass bitcoinrpc \
+ --brczero-rpc-url=http://127.0.0.1:27057 \
+ --first-brczero-height=120 \
+ server --http-port=84 >/dev/null 2>&1 &
+

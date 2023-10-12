@@ -377,7 +377,8 @@ func (cs *State) addProposalBlockPart(msg *BlockPartMessage, peerID p2p.ID) (add
 		cs.bt.onRecvBlock(height)
 		cs.bt.totalParts = cs.ProposalBlockParts.Total()
 		if cs.prerunTx {
-			cs.blockExec.NotifyPrerun(cs.ProposalBlock)
+			//todo remove prerun
+			//cs.blockExec.NotifyPrerun(cs.ProposalBlock)
 		}
 		// NOTE: it's possible to receive complete proposal blocks for future rounds without having the proposal
 		cs.Logger.Info("Received complete proposal block", "height", cs.ProposalBlock.Height, "hash", cs.ProposalBlock.Hash())

@@ -52,6 +52,10 @@ const (
 	FlagBlockCompressType      = "block-compress-type"
 	FlagBlockCompressFlag      = "block-compress-flag"
 	FlagBlockCompressThreshold = "block-compress-threshold"
+
+	RpcDefaultMode    = 0
+	RpcDeliverTxsMode = 1
+	RpcApplyBlockMode = 2
 )
 
 var (
@@ -59,7 +63,7 @@ var (
 	BlockCompressFlag      = 0
 	BlockCompressThreshold = 1024000
 
-	RpcFlag = false
+	RpcFlag = 0
 )
 
 type BlockExInfo struct {

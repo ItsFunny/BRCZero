@@ -475,6 +475,12 @@ func (mem *CListMempool) BrczeroDataMinHeight() int64 {
 	return btcH
 }
 
+func (mem *CListMempool) SetBrcDataDelivered(btcH int64, value bool) {
+	mem.brczeroMtx.RLock()
+	defer mem.brczeroMtx.RUnlock()
+	mem.brczeroTxs[btcH].Delivered = value
+}
+
 func (mem *CListMempool) DelBrczeroDataByBTCHeight(btcHeight int64) {
 	mem.brczeroMtx.Lock()
 	defer mem.brczeroMtx.Unlock()

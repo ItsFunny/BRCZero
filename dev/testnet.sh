@@ -110,6 +110,8 @@ run() {
     --rest.laddr tcp://localhost:$restport \
     --consensus-role=v$index \
     --active-view-change=false \
+    --deliver-txs-mode=0 \
+    --enable-preruntx=false \
     --keyring-backend test >cache/val${index}.log 2>&1 &
 }
 

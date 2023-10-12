@@ -6,6 +6,8 @@ import (
 	"io"
 	"sync"
 
+	tmtypes "github.com/brc20-collab/brczero/libs/tendermint/types"
+
 	mpttype "github.com/brc20-collab/brczero/libs/cosmos-sdk/store/mpt/types"
 
 	ethcmn "github.com/ethereum/go-ethereum/common"
@@ -58,8 +60,10 @@ func (ms *ImmutableMptStore) GetBrcRpcState(key []byte) []byte {
 func (ms *ImmutableMptStore) Get(key []byte) []byte {
 	ms.mtx.Lock()
 	defer ms.mtx.Unlock()
-	if value := ms.GetBrcRpcState(key); value != nil {
-		return value
+	if tmtypes.RpcFlag != tmtypes.RpcApplyBlockMode {
+		if value := ms.GetBrcRpcState(key); value != nil {
+			return value
+		}
 	}
 	switch mptKeyType(key) {
 	case storageType:
