@@ -313,7 +313,9 @@ func (blockExec *BlockExecutor) ApplyBlock(
 	startTime = time.Now().UnixNano()
 
 	// Lock mempool, commit app state, update mempoool.
+	fmt.Println("====================commit-before", types.RpcFlag)
 	commitResp, retainHeight, err := blockExec.commit(state, block, deltaInfo, abciResponses.DeliverTxs, trc)
+	fmt.Println("====================commit-after", types.RpcFlag)
 	endTime = time.Now().UnixNano()
 	blockExec.metrics.CommitTime.Set(float64(endTime-startTime) / 1e6)
 	if err != nil {
@@ -509,13 +511,15 @@ func (blockExec *BlockExecutor) commit(
 
 	trc.Pin("mpUpdate")
 	// Update mempool.
-	err = blockExec.mempool.Update(
-		block.Height,
-		block.Txs,
-		deliverTxResponses,
-		TxPreCheck(state),
-		TxPostCheck(state),
-	)
+	// todo delete all Update
+	//err = blockExec.mempool.Update(
+	//	block.Height,
+	//	block.Txs,
+	//	deliverTxResponses,
+	//	TxPreCheck(state),
+	//	TxPostCheck(state),
+	//)
+
 	// Update BRCZeroData
 	blockExec.mempool.DelBrczeroDataByBTCHeight(block.BtcHeight)
 
