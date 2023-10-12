@@ -3,14 +3,15 @@ package consensus
 import (
 	"bytes"
 	"fmt"
+	"reflect"
+	"runtime/debug"
+	"time"
+
 	cfg "github.com/brc20-collab/brczero/libs/tendermint/config"
 	cstypes "github.com/brc20-collab/brczero/libs/tendermint/consensus/types"
 	"github.com/brc20-collab/brczero/libs/tendermint/libs/fail"
 	"github.com/brc20-collab/brczero/libs/tendermint/types"
 	tmtime "github.com/brc20-collab/brczero/libs/tendermint/types/time"
-	"reflect"
-	"runtime/debug"
-	"time"
 )
 
 //-----------------------------------------
@@ -400,9 +401,7 @@ func (cs *State) rpcDeliverTxs(btcHeight int64) {
 		mockBlock, _ := cs.createMockBlock(h, brczeroData)
 		// when DeliverTx, the stores(mpt and iavl) use Set()/Delete() and the cache the kv
 		types.RpcFlag = types.RpcDeliverTxsMode
-		fmt.Println("========deliverTxs-before, rpcFlag", types.RpcFlag)
 		_, _ = cs.blockExec.DeliverTxsForBrczeroRpc(mockBlock)
-		fmt.Println("========deliverTxs-after, rpcFlag", types.RpcFlag)
 
 		types.RpcFlag = types.RpcDefaultMode
 

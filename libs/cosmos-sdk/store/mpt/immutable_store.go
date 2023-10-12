@@ -3,9 +3,10 @@ package mpt
 import (
 	"encoding/hex"
 	"fmt"
-	tmtypes "github.com/brc20-collab/brczero/libs/tendermint/types"
 	"io"
 	"sync"
+
+	tmtypes "github.com/brc20-collab/brczero/libs/tendermint/types"
 
 	mpttype "github.com/brc20-collab/brczero/libs/cosmos-sdk/store/mpt/types"
 
@@ -59,7 +60,6 @@ func (ms *ImmutableMptStore) GetBrcRpcState(key []byte) []byte {
 func (ms *ImmutableMptStore) Get(key []byte) []byte {
 	ms.mtx.Lock()
 	defer ms.mtx.Unlock()
-	fmt.Println("=========ImmutableMptStore-Get, rpcFlag", tmtypes.RpcFlag)
 	if tmtypes.RpcFlag != tmtypes.RpcApplyBlockMode {
 		if value := ms.GetBrcRpcState(key); value != nil {
 			return value

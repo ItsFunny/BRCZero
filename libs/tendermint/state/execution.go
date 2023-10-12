@@ -218,7 +218,6 @@ func (blockExec *BlockExecutor) ValidateBlock(state State, block *types.Block) e
 // It takes a blockID to avoid recomputing the parts hash.
 func (blockExec *BlockExecutor) ApplyBlock(
 	state State, blockID types.BlockID, block *types.Block) (State, int64, error) {
-
 	if ApplyBlockPprofTime >= 0 {
 		f, t := PprofStart()
 		defer PprofEnd(int(block.Height), f, t)
@@ -255,11 +254,9 @@ func (blockExec *BlockExecutor) ApplyBlock(
 	//wait till the last block async write be saved
 	blockExec.tryWaitLastBlockSave(block.Height - 1)
 
-	fmt.Println("========applyBlock-before, rpcFlag", types.RpcFlag)
 	types.RpcFlag = types.RpcApplyBlockMode
 	abciResponses, duration, err := blockExec.runAbci(block, deltaInfo)
 	types.RpcFlag = types.RpcDefaultMode
-	fmt.Println("========applyBlock-after, rpcFlag", types.RpcFlag)
 
 	// publish event
 	if types.EnableEventBlockTime {
@@ -313,9 +310,7 @@ func (blockExec *BlockExecutor) ApplyBlock(
 	startTime = time.Now().UnixNano()
 
 	// Lock mempool, commit app state, update mempoool.
-	fmt.Println("====================commit-before", types.RpcFlag)
 	commitResp, retainHeight, err := blockExec.commit(state, block, deltaInfo, abciResponses.DeliverTxs, trc)
-	fmt.Println("====================commit-after", types.RpcFlag)
 	endTime = time.Now().UnixNano()
 	blockExec.metrics.CommitTime.Set(float64(endTime-startTime) / 1e6)
 	if err != nil {
@@ -511,7 +506,7 @@ func (blockExec *BlockExecutor) commit(
 
 	trc.Pin("mpUpdate")
 	// Update mempool.
-	// todo delete all Update
+	// todo delete all Update related code
 	//err = blockExec.mempool.Update(
 	//	block.Height,
 	//	block.Txs,
