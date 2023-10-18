@@ -14,7 +14,6 @@ import (
 	"github.com/brc20-collab/brczero/app/types"
 	"github.com/brc20-collab/brczero/app/utils/sanity"
 	"github.com/brc20-collab/brczero/libs/system/trace"
-	"github.com/brc20-collab/brczero/libs/tendermint/consensus"
 	"github.com/brc20-collab/brczero/libs/tendermint/libs/automation"
 	tmtypes "github.com/brc20-collab/brczero/libs/tendermint/types"
 	tmdb "github.com/brc20-collab/brczero/libs/tm-db"
@@ -112,7 +111,6 @@ func RegisterAppFlag(cmd *cobra.Command) {
 	cmd.Flags().String(tmdb.FlagRocksdbOpts, "", "Options of rocksdb. (block_size=4KB,block_cache=1GB,statistics=true,allow_mmap_reads=true,max_open_files=-1,unordered_write=true,pipelined_write=true)")
 	cmd.Flags().String(types.FlagNodeMode, "", "Node mode (rpc|val|archive) is used to manage flags")
 
-	cmd.Flags().Bool(consensus.EnablePrerunTx, true, "enable proactively runtx mode, default open")
 	cmd.Flags().String(automation.ConsensusRole, "", "consensus role")
 	cmd.Flags().String(automation.ConsensusTestcase, "", "consensus test case file")
 
