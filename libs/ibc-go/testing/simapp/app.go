@@ -689,7 +689,7 @@ func NewSimApp(
 		WasmConfig:        &wasmConfig,
 		TXCounterStoreKey: keys[wasm.StoreKey],
 	}
-	app.SetAnteHandler(appante.NewAnteHandler(app.AccountKeeper, app.EvmKeeper, app.SupplyKeeper, validateMsgHook(), app.WasmHandler, app.IBCKeeper, app.StakingKeeper, app.ParamsKeeper))
+	app.SetAnteHandler(appante.NewAnteHandler(app.AccountKeeper, app.EvmKeeper, app.SupplyKeeper, validateMsgHook()))
 	app.SetEndBlocker(app.EndBlocker)
 	app.SetGasRefundHandler(refund.NewGasRefundHandler(app.AccountKeeper, app.SupplyKeeper, app.EvmKeeper))
 	app.SetAccNonceHandler(NewAccHandler(app.AccountKeeper))
@@ -721,7 +721,7 @@ func NewSimApp(
 }
 
 func updateFeeCollectorHandler(bk bank.Keeper, sk supply.Keeper) sdk.UpdateFeeCollectorAccHandler {
-	return func(ctx sdk.Context, balance sdk.Coins, txFeesplit []*sdk.FeeSplitInfo) error {
+	return func(ctx sdk.Context, balance sdk.Coins) error {
 		return bk.SetCoins(ctx, sk.GetModuleAccount(ctx, auth.FeeCollectorName).GetAddress(), balance)
 	}
 }

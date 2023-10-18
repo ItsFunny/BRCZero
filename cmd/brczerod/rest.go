@@ -22,7 +22,6 @@ import (
 	distr "github.com/brc20-collab/brczero/x/distribution"
 	distrest "github.com/brc20-collab/brczero/x/distribution/client/rest"
 	evmrest "github.com/brc20-collab/brczero/x/evm/client/rest"
-	fsrest "github.com/brc20-collab/brczero/x/feesplit/client/rest"
 	govrest "github.com/brc20-collab/brczero/x/gov/client/rest"
 	paramsclient "github.com/brc20-collab/brczero/x/params/client"
 	stakingclient "github.com/brc20-collab/brczero/x/staking/client"
@@ -62,7 +61,6 @@ func registerRoutesV1(rs *lcd.RestServer) {
 	evmrest.RegisterRoutes(rs.CliCtx, v1Router)
 	erc20rest.RegisterRoutes(rs.CliCtx, v1Router)
 	wasmrest.RegisterRoutes(rs.CliCtx, v1Router)
-	fsrest.RegisterRoutes(rs.CliCtx, v1Router)
 	govrest.RegisterRoutes(rs.CliCtx, v1Router,
 		[]govrest.ProposalRESTHandler{
 			paramsclient.ProposalHandler.RESTHandler(rs.CliCtx),
@@ -91,5 +89,4 @@ func registerRoutesV2(rs *lcd.RestServer) {
 	stakingrest.RegisterRoutes(rs.CliCtx, v2Router)
 	distrest.RegisterRoutes(rs.CliCtx, v2Router, dist.StoreKey)
 	tokensrest.RegisterRoutesV2(rs.CliCtx, v2Router, token.StoreKey)
-	fsrest.RegisterRoutesV2(rs.CliCtx, v2Router)
 }

@@ -20,7 +20,6 @@ import (
 	distr "github.com/brc20-collab/brczero/x/distribution"
 	"github.com/brc20-collab/brczero/x/erc20"
 	"github.com/brc20-collab/brczero/x/evidence"
-	"github.com/brc20-collab/brczero/x/feesplit"
 	"github.com/brc20-collab/brczero/x/gov"
 	"github.com/brc20-collab/brczero/x/slashing"
 	staking "github.com/brc20-collab/brczero/x/staking/types"
@@ -44,7 +43,6 @@ func GetAllStoreKeys() []string {
 		erc20.StoreKey,
 		// mpt.StoreKey,
 		// wasm.StoreKey,
-		feesplit.StoreKey,
 	}
 }
 
