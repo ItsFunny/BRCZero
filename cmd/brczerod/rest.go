@@ -3,8 +3,6 @@ package main
 import (
 	"github.com/brc20-collab/brczero/app"
 	"github.com/brc20-collab/brczero/libs/cosmos-sdk/types/tx"
-	"github.com/brc20-collab/brczero/x/wasm/proxy"
-
 	mintclient "github.com/brc20-collab/brczero/libs/cosmos-sdk/x/mint/client"
 	mintrest "github.com/brc20-collab/brczero/libs/cosmos-sdk/x/mint/client/rest"
 	evmclient "github.com/brc20-collab/brczero/x/evm/client"
@@ -26,7 +24,6 @@ import (
 	stakingrest "github.com/brc20-collab/brczero/x/staking/client/rest"
 	"github.com/brc20-collab/brczero/x/token"
 	tokensrest "github.com/brc20-collab/brczero/x/token/client/rest"
-	wasmrest "github.com/brc20-collab/brczero/x/wasm/client/rest"
 )
 
 // registerRoutes registers the routes from the different modules for the LCD.
@@ -37,7 +34,6 @@ func registerRoutes(rs *lcd.RestServer) {
 	rpc.RegisterRoutes(rs)
 	registerRoutesV1(rs)
 	registerRoutesV2(rs)
-	proxy.SetCliContext(rs.CliCtx)
 }
 
 func registerGrpc(rs *lcd.RestServer) {
@@ -57,7 +53,6 @@ func registerRoutesV1(rs *lcd.RestServer) {
 	tokensrest.RegisterRoutes(rs.CliCtx, v1Router, token.StoreKey)
 	supplyrest.RegisterRoutes(rs.CliCtx, v1Router)
 	evmrest.RegisterRoutes(rs.CliCtx, v1Router)
-	wasmrest.RegisterRoutes(rs.CliCtx, v1Router)
 	govrest.RegisterRoutes(rs.CliCtx, v1Router,
 		[]govrest.ProposalRESTHandler{
 			paramsclient.ProposalHandler.RESTHandler(rs.CliCtx),

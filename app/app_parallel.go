@@ -5,7 +5,6 @@ import (
 
 	appante "github.com/brc20-collab/brczero/app/ante"
 	ethermint "github.com/brc20-collab/brczero/app/types"
-	"github.com/brc20-collab/brczero/libs/cosmos-sdk/baseapp"
 	sdk "github.com/brc20-collab/brczero/libs/cosmos-sdk/types"
 	"github.com/brc20-collab/brczero/libs/cosmos-sdk/x/auth"
 	authante "github.com/brc20-collab/brczero/libs/cosmos-sdk/x/auth/ante"
@@ -15,7 +14,6 @@ import (
 	"github.com/brc20-collab/brczero/libs/tendermint/types"
 	"github.com/brc20-collab/brczero/x/evm"
 	evmtypes "github.com/brc20-collab/brczero/x/evm/types"
-	wasmkeeper "github.com/brc20-collab/brczero/x/wasm/keeper"
 )
 
 // feeCollectorHandler set or get the value of feeCollectorAcc
@@ -33,12 +31,6 @@ func updateFeeCollectorHandler(bk bank.Keeper, sk supply.Keeper) sdk.UpdateFeeCo
 func fixLogForParallelTxHandler(ek *evm.Keeper) sdk.LogFix {
 	return func(tx []sdk.Tx, logIndex []int, hasEnterEvmTx []bool, anteErrs []error, resp []abci.ResponseDeliverTx) (logs [][]byte) {
 		return ek.FixLog(tx, logIndex, hasEnterEvmTx, anteErrs, resp)
-	}
-}
-
-func fixCosmosTxCountInWasmForParallelTx(storeKey sdk.StoreKey) sdk.UpdateCosmosTxCount {
-	return func(ctx sdk.Context, txCount int) {
-		wasmkeeper.UpdateTxCount(ctx, storeKey, txCount)
 	}
 }
 
@@ -84,7 +76,7 @@ func getTxFeeAndFromHandler(ek appante.EVMKeeper) sdk.GetTxFeeAndFromHandler {
 				needUpdateTXCounter = true
 				// E2C will include cosmos Msg in the Payload.
 				// Sometimes, this Msg do not support parallel execution.
-				if !types.HigherThanMercury(ctx.BlockHeight()) || !isParaSupportedE2CMsg(evmTx.Data.Payload) {
+				if !types.HigherThanMercury(ctx.BlockHeight()) {
 					supportPara = false
 				}
 			}
@@ -120,25 +112,5 @@ func getTxFeeAndFromHandler(ek appante.EVMKeeper) sdk.GetTxFeeAndFromHandler {
 		}
 
 		return
-	}
-}
-
-func isParaSupportedE2CMsg(payload []byte) bool {
-	// Here, payload must be E2C's Data.Payload
-	p, err := evm.ParseContractParam(payload)
-	if err != nil {
-		return false
-	}
-	mw, err := baseapp.ParseMsgWrapper(p)
-	if err != nil {
-		return false
-	}
-	switch mw.Name {
-	case "wasm/MsgExecuteContract":
-		return true
-	case "wasm/MsgStoreCode":
-		return true
-	default:
-		return false
 	}
 }

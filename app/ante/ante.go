@@ -31,7 +31,7 @@ func NewAnteHandler(ak auth.AccountKeeper, evmKeeper EVMKeeper, sk types.SupplyK
 
 	stdTxAnteHandler = sdk.ChainAnteDecorators(
 		authante.NewSetUpContextDecorator(),               // outermost AnteDecorator. SetUpContext must be called first
-		NewWasmGasLimitDecorator(evmKeeper),               // gas limit should not be greater than max gas limit
+		NewGasLimitDecorator(evmKeeper),                   // gas limit should not be greater than max gas limit
 		NewAccountBlockedVerificationDecorator(evmKeeper), //account blocked check AnteDecorator
 		authante.NewMempoolFeeDecorator(),
 		authante.NewValidateBasicDecorator(),

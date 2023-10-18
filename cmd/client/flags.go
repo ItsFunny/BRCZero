@@ -20,14 +20,12 @@ import (
 	evmtypes "github.com/brc20-collab/brczero/x/evm/types"
 	"github.com/brc20-collab/brczero/x/evm/watcher"
 	"github.com/brc20-collab/brczero/x/token"
-	"github.com/brc20-collab/brczero/x/wasm"
 )
 
 func RegisterAppFlag(cmd *cobra.Command) {
 	cmd.Flags().Bool(watcher.FlagFastQuery, false, "Enable the fast query mode for rpc queries")
 	cmd.Flags().Bool(watcher.FlagFastQueryForWasm, false, "Enable the fast query mode for wasm tx")
 	cmd.Flags().Uint64(eth.FlagFastQueryThreshold, 10, "Set the threshold of fast query")
-	cmd.Flags().String(eth.FlagE2cWasmMsgHelperAddr, "", "Set the e2c wasm msg helper contract address")
 	cmd.Flags().Int(watcher.FlagFastQueryLru, 1000, "Set the size of LRU cache under fast-query mode")
 	cmd.Flags().Int(backend.FlagApiBackendBlockLruCache, 30000, "Set the size of block LRU cache for backend mem cache")
 	cmd.Flags().Int(backend.FlagApiBackendTxLruCache, 100000, "Set the size of tx LRU cache for backend mem cache")
@@ -131,6 +129,4 @@ func RegisterAppFlag(cmd *cobra.Command) {
 
 	// flags for tendermint rpc
 	cmd.Flags().Int(config.FlagMaxSubscriptionClients, 100, "Maximum number of unique clientIDs that Tendermint RPC server can /subscribe or /broadcast_tx_commit")
-
-	wasm.AddModuleInitFlags(cmd)
 }

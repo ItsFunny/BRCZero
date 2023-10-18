@@ -1,16 +1,13 @@
 package simapp
 
 import (
-	"fmt"
 	"io"
 	"math/big"
 	"os"
-	"path/filepath"
 	"sort"
 	"strings"
 	"sync"
 
-	"github.com/spf13/viper"
 	"google.golang.org/grpc/encoding"
 	"google.golang.org/grpc/encoding/proto"
 
@@ -77,7 +74,6 @@ import (
 	"github.com/brc20-collab/brczero/libs/system"
 	"github.com/brc20-collab/brczero/libs/system/trace"
 	abci "github.com/brc20-collab/brczero/libs/tendermint/abci/types"
-	"github.com/brc20-collab/brczero/libs/tendermint/libs/cli"
 	"github.com/brc20-collab/brczero/libs/tendermint/libs/log"
 	tmos "github.com/brc20-collab/brczero/libs/tendermint/libs/os"
 	tmtypes "github.com/brc20-collab/brczero/libs/tendermint/types"
@@ -97,9 +93,6 @@ import (
 	"github.com/brc20-collab/brczero/x/staking"
 	stakingclient "github.com/brc20-collab/brczero/x/staking/client"
 	"github.com/brc20-collab/brczero/x/token"
-	"github.com/brc20-collab/brczero/x/wasm"
-	wasmclient "github.com/brc20-collab/brczero/x/wasm/client"
-	wasmkeeper "github.com/brc20-collab/brczero/x/wasm/keeper"
 )
 
 func init() {
@@ -149,13 +142,6 @@ var (
 			evmclient.ManageContractByteCodeProposalHandler,
 			govclient.ManageTreasuresProposalHandler,
 			govclient.ExtraProposalHandler,
-			wasmclient.MigrateContractProposalHandler,
-			wasmclient.UpdateContractAdminProposalHandler,
-			wasmclient.PinCodesProposalHandler,
-			wasmclient.UnpinCodesProposalHandler,
-			wasmclient.UpdateDeploymentWhitelistProposalHandler,
-			wasmclient.UpdateWASMContractMethodBlockedListProposalHandler,
-			wasmclient.GetCmdExtraProposal,
 			stakingclient.ProposeValidatorProposalHandler,
 		),
 		params.AppModuleBasic{},
@@ -170,7 +156,6 @@ var (
 		capability.CapabilityModuleAdapter{},
 		transfer.TransferModule{},
 		mock.AppModuleBasic{},
-		wasm.AppModuleBasic{},
 		ica2.TestICAModuleBaisc{},
 		fee.TestFeeAppModuleBaisc{},
 	)
@@ -236,7 +221,6 @@ type SimApp struct {
 	EvidenceKeeper evidence.Keeper
 	EvmKeeper      *evm.Keeper
 	TokenKeeper    token.Keeper
-	wasmKeeper     wasm.Keeper
 
 	// the module manager
 	mm *module.Manager
@@ -260,7 +244,6 @@ type SimApp struct {
 	heightTasks          map[int64]*upgradetypes.HeightTasks
 
 	ibcScopeKeep capabilitykeeper.ScopedKeeper
-	WasmHandler  wasmkeeper.HandlerOption
 
 	IBCFeeKeeper        ibcfeekeeper.Keeper
 	ICAControllerKeeper icacontrollerkeeper.Keeper
@@ -304,7 +287,6 @@ func NewSimApp(
 		token.StoreKey, token.KeyLock,
 		ibctransfertypes.StoreKey, capabilitytypes.StoreKey,
 		ibchost.StoreKey,
-		wasm.StoreKey,
 		icacontrollertypes.StoreKey, icahosttypes.StoreKey, ibcfeetypes.StoreKey,
 	)
 
@@ -338,7 +320,6 @@ func NewSimApp(
 	app.subspaces[token.ModuleName] = app.ParamsKeeper.Subspace(token.DefaultParamspace)
 	app.subspaces[ibchost.ModuleName] = app.ParamsKeeper.Subspace(ibchost.ModuleName)
 	app.subspaces[ibctransfertypes.ModuleName] = app.ParamsKeeper.Subspace(ibctransfertypes.ModuleName)
-	app.subspaces[wasm.ModuleName] = app.ParamsKeeper.Subspace(wasm.ModuleName)
 	app.subspaces[icacontrollertypes.SubModuleName] = app.ParamsKeeper.Subspace(icacontrollertypes.SubModuleName)
 	app.subspaces[icahosttypes.SubModuleName] = app.ParamsKeeper.Subspace(icahosttypes.SubModuleName)
 	app.subspaces[ibcfeetypes.ModuleName] = app.ParamsKeeper.Subspace(ibcfeetypes.ModuleName)
@@ -519,34 +500,6 @@ func NewSimApp(
 		staking.NewMultiStakingHooks(app.DistrKeeper.Hooks(), app.SlashingKeeper.Hooks()),
 	)
 
-	homeDir := viper.GetString(cli.HomeFlag)
-	wasmDir := filepath.Join(homeDir, "wasm")
-	wasmConfig, err := wasm.ReadWasmConfig()
-	if err != nil {
-		panic(fmt.Sprintf("error while reading wasm config: %s", err))
-	}
-
-	// The last arguments can contain custom message handlers, and custom query handlers,
-	// if we want to allow any custom callbacks
-	supportedFeatures := wasm.SupportedFeatures
-	app.wasmKeeper = wasm.NewKeeper(
-		app.marshal,
-		keys[wasm.StoreKey],
-		keys[mpt.StoreKey],
-		app.subspaces[wasm.ModuleName],
-		&app.AccountKeeper,
-		bank.NewBankKeeperAdapter(app.BankKeeper),
-		v2keeper.ChannelKeeper,
-		&v2keeper.PortKeeper,
-		nil,
-		app.TransferKeeper,
-		app.MsgServiceRouter(),
-		app.GRPCQueryRouter(),
-		wasmDir,
-		wasmConfig,
-		supportedFeatures,
-	)
-
 	// NOTE: Any module instantiated in the module manager that is later modified
 	// must be passed by reference here.
 	app.mm = module.NewManager(
@@ -571,7 +524,6 @@ func NewSimApp(
 		capability.TNewCapabilityModuleAdapter(codecProxy, *app.CapabilityKeeper),
 		transferModule,
 		mockModule,
-		wasm.NewAppModule(*app.marshal, &app.wasmKeeper),
 		fee.NewTestFeeAppModule(app.IBCFeeKeeper),
 		ica2.NewTestICAModule(codecProxy, &app.ICAControllerKeeper, &app.ICAHostKeeper),
 	)
@@ -592,7 +544,6 @@ func NewSimApp(
 		ibchost.ModuleName,
 		ibctransfertypes.ModuleName,
 		mock.ModuleName,
-		wasm.ModuleName,
 	)
 	app.mm.SetOrderEndBlockers(
 		//crisis.ModuleName,
@@ -600,7 +551,6 @@ func NewSimApp(
 		staking.ModuleName,
 		evm.ModuleName,
 		mock.ModuleName,
-		wasm.ModuleName,
 	)
 
 	// NOTE: The genutils module must occur after staking so that pools are
@@ -614,7 +564,6 @@ func NewSimApp(
 		ibchost.ModuleName,
 		evm.ModuleName, crisis.ModuleName, genutil.ModuleName, params.ModuleName, evidence.ModuleName,
 		mock.ModuleName,
-		wasm.ModuleName,
 		icatypes.ModuleName, ibcfeetypes.ModuleName,
 	)
 
@@ -639,7 +588,6 @@ func NewSimApp(
 		slashing.NewAppModule(app.SlashingKeeper, app.AccountKeeper, app.StakingKeeper),
 		params.NewAppModule(app.ParamsKeeper), // NOTE: only used for simulation to generate randomized param change proposals
 		ibc.NewAppModule(app.IBCKeeper),
-		wasm.NewAppModule(*app.marshal, &app.wasmKeeper),
 	)
 
 	app.sm.RegisterStoreDecoders()
@@ -652,15 +600,10 @@ func NewSimApp(
 	// initialize BaseApp
 	app.SetInitChainer(app.InitChainer)
 	app.SetBeginBlocker(app.BeginBlocker)
-	app.WasmHandler = wasmkeeper.HandlerOption{
-		WasmConfig:        &wasmConfig,
-		TXCounterStoreKey: keys[wasm.StoreKey],
-	}
 	app.SetAnteHandler(appante.NewAnteHandler(app.AccountKeeper, app.EvmKeeper, app.SupplyKeeper, validateMsgHook()))
 	app.SetEndBlocker(app.EndBlocker)
 	app.SetGasRefundHandler(refund.NewGasRefundHandler(app.AccountKeeper, app.SupplyKeeper, app.EvmKeeper))
 	app.SetAccNonceHandler(NewAccHandler(app.AccountKeeper))
-	app.SetUpdateWasmTxCount(fixCosmosTxCountInWasmForParallelTx(app.WasmHandler.TXCounterStoreKey))
 	app.SetUpdateFeeCollectorAccHandler(updateFeeCollectorHandler(app.BankKeeper, app.SupplyKeeper.Keeper))
 	app.SetParallelTxLogHandlers(fixLogForParallelTxHandler(app.EvmKeeper))
 	app.SetPartialConcurrentHandlers(getTxFeeAndFromHandler(app.EvmKeeper))
@@ -1112,10 +1055,4 @@ func (o *SimApp) CollectUpgradeModules(m *module.Manager) (map[int64]*upgradetyp
 // NOTE: used for testing purposes
 func (app *SimApp) GetModuleManager() *module.Manager {
 	return app.mm
-}
-
-func fixCosmosTxCountInWasmForParallelTx(storeKey sdk.StoreKey) sdk.UpdateCosmosTxCount {
-	return func(ctx sdk.Context, txCount int) {
-		wasmkeeper.UpdateTxCount(ctx, storeKey, txCount)
-	}
 }
