@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
-	"github.com/spf13/viper"
 
 	"github.com/brc20-collab/brczero/libs/system/trace"
 	cfg "github.com/brc20-collab/brczero/libs/tendermint/config"
@@ -52,7 +51,6 @@ type preBlockTaskRes struct {
 
 const (
 	msgQueueSize      = 1000
-	EnablePrerunTx    = "enable-preruntx"
 	BrczeroRetryTimes = 5
 )
 
@@ -159,8 +157,7 @@ type State struct {
 	trc          *trace.Tracer
 	blockTimeTrc *trace.Tracer
 
-	prerunTx bool
-	bt       *BlockTransport
+	bt *BlockTransport
 
 	vcMsg    *ViewChangeMessage
 	vcHeight map[int64]string
@@ -206,7 +203,6 @@ func NewState(
 		evsw:             tmevents.NewEventSwitch(),
 		metrics:          NopMetrics(),
 		trc:              trace.NewTracer(trace.Consensus),
-		prerunTx:         viper.GetBool(EnablePrerunTx),
 		bt:               &BlockTransport{},
 		blockTimeTrc:     trace.NewTracer(trace.LastBlockTime),
 		vcHeight:         make(map[int64]string),
@@ -224,9 +220,6 @@ func NewState(
 	}
 
 	cs.updateToState(state)
-	if cs.prerunTx {
-		cs.blockExec.InitPrerun()
-	}
 
 	// Don't call scheduleRound0 yet.
 	// We do that upon Start().

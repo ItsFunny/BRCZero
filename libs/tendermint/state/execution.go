@@ -66,8 +66,6 @@ type BlockExecutor struct {
 	// download or upload data to dds
 	deltaContext *DeltaContext
 
-	prerunCtx *prerunContext
-
 	isFastSync bool
 
 	// async save state, validators, consensus params, abci responses here
@@ -110,7 +108,6 @@ func NewBlockExecutor(
 		evpool:       evpool,
 		logger:       logger,
 		metrics:      NopMetrics(),
-		prerunCtx:    newPrerunContex(logger),
 		deltaContext: newDeltaContext(logger),
 		eventsChan:   make(chan event, 5),
 	}
@@ -422,10 +419,6 @@ func (blockExec *BlockExecutor) runAbci(block *types.Block, deltaInfo *DeltaInfo
 		abciResponses = deltaInfo.abciResponses
 		duration = time.Now().Sub(t0)
 	} else {
-		pc := blockExec.prerunCtx
-		if pc.prerunTx {
-			abciResponses, duration, err = pc.getPrerunResult(block)
-		}
 
 		if abciResponses == nil {
 			t0 := time.Now()
@@ -610,7 +603,6 @@ func execBlockOnProxyApp(context *executionTask) (*ABCIResponses, error) {
 		if context != nil && context.stopped {
 			stopedCh <- struct{}{}
 			close(stopedCh)
-			context.dump(fmt.Sprintf("Prerun stopped, %d/%d tx executed", count+1, len(block.Txs)))
 			return nil, fmt.Errorf("Prerun stopped")
 		}
 		count += 1
