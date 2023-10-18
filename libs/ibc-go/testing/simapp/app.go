@@ -93,9 +93,6 @@ import (
 	"github.com/brc20-collab/brczero/x/genutil"
 	"github.com/brc20-collab/brczero/x/gov"
 	"github.com/brc20-collab/brczero/x/gov/keeper"
-	"github.com/brc20-collab/brczero/x/icamauth"
-	icamauthkeeper "github.com/brc20-collab/brczero/x/icamauth/keeper"
-	icamauthtypes "github.com/brc20-collab/brczero/x/icamauth/types"
 	"github.com/brc20-collab/brczero/x/params"
 	paramsclient "github.com/brc20-collab/brczero/x/params/client"
 	"github.com/brc20-collab/brczero/x/slashing"
@@ -181,7 +178,6 @@ var (
 		wasm.AppModuleBasic{},
 		ica2.TestICAModuleBaisc{},
 		fee.TestFeeAppModuleBaisc{},
-		icamauth.AppModuleBasic{},
 	)
 
 	// module account permissions
@@ -274,7 +270,6 @@ type SimApp struct {
 	WasmHandler  wasmkeeper.HandlerOption
 
 	IBCFeeKeeper        ibcfeekeeper.Keeper
-	ICAMauthKeeper      icamauthkeeper.Keeper
 	ICAControllerKeeper icacontrollerkeeper.Keeper
 	ICAHostKeeper       icahostkeeper.Keeper
 	ICAAuthModule       mock.IBCModule
@@ -319,7 +314,6 @@ func NewSimApp(
 		erc20.StoreKey,
 		wasm.StoreKey,
 		icacontrollertypes.StoreKey, icahosttypes.StoreKey, ibcfeetypes.StoreKey,
-		icamauthtypes.StoreKey,
 	)
 
 	tkeys := sdk.NewTransientStoreKeys(params.TStoreKey)
@@ -420,7 +414,6 @@ func NewSimApp(
 	scopedICAMockKeeper := app.CapabilityKeeper.ScopeToModule(mock.ModuleName + icacontrollertypes.SubModuleName)
 	scopedICAControllerKeeper := app.CapabilityKeeper.ScopeToModule(icacontrollertypes.SubModuleName)
 	scopedICAHostKeeper := app.CapabilityKeeper.ScopeToModule(icahosttypes.SubModuleName)
-	scopedICAMauthKeeper := app.CapabilityKeeper.ScopeToModule(icamauthtypes.ModuleName)
 	scopedFeeMockKeeper := app.CapabilityKeeper.ScopeToModule(MockFeePort)
 
 	v2keeper := ibc.NewKeeper(
@@ -458,13 +451,6 @@ func NewSimApp(
 		codecProxy, keys[icahosttypes.StoreKey], app.GetSubspace(icahosttypes.SubModuleName),
 		app.IBCKeeper.V2Keeper.ChannelKeeper, &app.IBCKeeper.V2Keeper.PortKeeper,
 		app.SupplyKeeper, scopedICAHostKeeper, app.MsgServiceRouter(),
-	)
-
-	app.ICAMauthKeeper = icamauthkeeper.NewKeeper(
-		codecProxy,
-		keys[icamauthtypes.StoreKey],
-		app.ICAControllerKeeper,
-		scopedICAMauthKeeper,
 	)
 
 	app.Erc20Keeper = erc20.NewKeeper(app.marshal.GetCdc(), app.keys[erc20.ModuleName], app.subspaces[erc20.ModuleName],
@@ -538,7 +524,6 @@ func NewSimApp(
 
 	ibcRouter.AddRoute(icacontrollertypes.SubModuleName, icaControllerStack)
 	ibcRouter.AddRoute(icahosttypes.SubModuleName, icaHostStack)
-	ibcRouter.AddRoute(icamauthtypes.ModuleName, icaControllerStack)
 	ibcRouter.AddRoute(mock.ModuleName+icacontrollertypes.SubModuleName, icaControllerStack) // ica with mock auth module stack route to ica (top level of middleware stack)
 	//ibcRouter.AddRoute(ibcmock.ModuleName, mockModule)
 	v2keeper.SetRouter(ibcRouter)
@@ -605,7 +590,6 @@ func NewSimApp(
 		wasm.NewAppModule(*app.marshal, &app.wasmKeeper),
 		fee.NewTestFeeAppModule(app.IBCFeeKeeper),
 		ica2.NewTestICAModule(codecProxy, &app.ICAControllerKeeper, &app.ICAHostKeeper),
-		icamauth.NewAppModule(codecProxy, app.ICAMauthKeeper),
 	)
 
 	// During begin block slashing happens after distr.BeginBlocker so that
