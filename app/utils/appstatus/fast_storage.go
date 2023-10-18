@@ -18,7 +18,6 @@ import (
 	ibchost "github.com/brc20-collab/brczero/libs/ibc-go/modules/core/24-host"
 	dbm "github.com/brc20-collab/brczero/libs/tm-db"
 	distr "github.com/brc20-collab/brczero/x/distribution"
-	"github.com/brc20-collab/brczero/x/erc20"
 	"github.com/brc20-collab/brczero/x/evidence"
 	"github.com/brc20-collab/brczero/x/gov"
 	"github.com/brc20-collab/brczero/x/slashing"
@@ -40,7 +39,6 @@ func GetAllStoreKeys() []string {
 		token.StoreKey, token.KeyLock,
 		ibctransfertypes.StoreKey, capabilitytypes.StoreKey,
 		ibchost.StoreKey,
-		erc20.StoreKey,
 		// mpt.StoreKey,
 		// wasm.StoreKey,
 	}

@@ -12,7 +12,6 @@ import (
 	sdk "github.com/brc20-collab/brczero/libs/cosmos-sdk/types"
 	sdkerrors "github.com/brc20-collab/brczero/libs/cosmos-sdk/types/errors"
 	tmtypes "github.com/brc20-collab/brczero/libs/tendermint/types"
-	erc20types "github.com/brc20-collab/brczero/x/erc20/types"
 	evmtypes "github.com/brc20-collab/brczero/x/evm/types"
 	"github.com/brc20-collab/brczero/x/evm/watcher"
 	"github.com/brc20-collab/brczero/x/vmbridge/types"
@@ -136,7 +135,7 @@ func (k Keeper) SendToEvm(ctx sdk.Context, caller, contract string, recipient st
 	if watcher.IsWatcherEnabled() {
 		ctx.SetWatcher(watcher.NewTxWatcher())
 	}
-	_, result, err := k.CallEvm(ctx, erc20types.IbcEvmModuleETHAddr, &conrtractAddr, big.NewInt(0), input)
+	_, result, err := k.CallEvm(ctx, common.Address{}, &conrtractAddr, big.NewInt(0), input)
 	if err != nil {
 		return false, err
 	}

@@ -51,7 +51,6 @@ import (
 	"github.com/brc20-collab/brczero/libs/tendermint/global"
 	"github.com/brc20-collab/brczero/libs/tendermint/libs/log"
 	tmtypes "github.com/brc20-collab/brczero/libs/tendermint/types"
-	"github.com/brc20-collab/brczero/x/erc20"
 	"github.com/brc20-collab/brczero/x/evm"
 	evmtypes "github.com/brc20-collab/brczero/x/evm/types"
 	"github.com/brc20-collab/brczero/x/evm/watcher"
@@ -985,8 +984,6 @@ func (api *PublicEthereumAPI) doCall(
 			return simRes, err
 		}
 		tempHooks := evm.NewLogProcessEvmHook(
-			erc20.NewSendToIbcEventHandler(erc20.Keeper{}),
-			erc20.NewSendNative20ToIbcEventHandler(erc20.Keeper{}),
 			vmbridge.NewSendToWasmEventHandler(vmbridge.Keeper{}),
 			vmbridge.NewCallToWasmEventHandler(vmbridge.Keeper{}),
 		)

@@ -44,7 +44,6 @@ import (
 	upgradekeeper "github.com/brc20-collab/brczero/libs/cosmos-sdk/x/upgrade"
 	upgradetypes "github.com/brc20-collab/brczero/libs/cosmos-sdk/x/upgrade"
 	distr "github.com/brc20-collab/brczero/x/distribution"
-	"github.com/brc20-collab/brczero/x/erc20"
 	"github.com/brc20-collab/brczero/x/staking"
 	token "github.com/brc20-collab/brczero/x/token/types"
 
@@ -238,7 +237,6 @@ func createTestInput(
 		gov.StoreKey, params.StoreKey, upgrade.StoreKey, evidence.StoreKey,
 		token.StoreKey, token.KeyLock, ibctransfertypes.StoreKey, capabilitytypes.StoreKey,
 		ibchost.StoreKey,
-		erc20.StoreKey,
 		mpt.StoreKey,
 		types.StoreKey,
 	)
@@ -308,7 +306,6 @@ func createTestInput(
 		gov.ModuleName:              nil,
 		token.ModuleName:            {supply.Minter, supply.Burner},
 		ibctransfertypes.ModuleName: {authtypes.Minter, authtypes.Burner},
-		erc20.ModuleName:            {authtypes.Minter, authtypes.Burner},
 		types.ModuleName:            nil,
 	}
 	accountKeeper := auth.NewAccountKeeper(legacyAmino, keys[mpt.StoreKey], subspace(authtypes.ModuleName), chain.ProtoAccount)

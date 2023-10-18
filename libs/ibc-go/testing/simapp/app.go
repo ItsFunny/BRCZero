@@ -84,8 +84,6 @@ import (
 	dbm "github.com/brc20-collab/brczero/libs/tm-db"
 	commonversion "github.com/brc20-collab/brczero/x/common/version"
 	distr "github.com/brc20-collab/brczero/x/distribution"
-	"github.com/brc20-collab/brczero/x/erc20"
-	erc20client "github.com/brc20-collab/brczero/x/erc20/client"
 	"github.com/brc20-collab/brczero/x/evidence"
 	"github.com/brc20-collab/brczero/x/evm"
 	evmclient "github.com/brc20-collab/brczero/x/evm/client"
@@ -151,8 +149,6 @@ var (
 			evmclient.ManageContractByteCodeProposalHandler,
 			govclient.ManageTreasuresProposalHandler,
 			govclient.ExtraProposalHandler,
-			erc20client.TokenMappingProposalHandler,
-			erc20client.ProxyContractRedirectHandler,
 			wasmclient.MigrateContractProposalHandler,
 			wasmclient.UpdateContractAdminProposalHandler,
 			wasmclient.PinCodesProposalHandler,
@@ -173,7 +169,6 @@ var (
 		core.CoreModule{},
 		capability.CapabilityModuleAdapter{},
 		transfer.TransferModule{},
-		erc20.AppModuleBasic{},
 		mock.AppModuleBasic{},
 		wasm.AppModuleBasic{},
 		ica2.TestICAModuleBaisc{},
@@ -190,7 +185,6 @@ var (
 		gov.ModuleName:              nil,
 		token.ModuleName:            {supply.Minter, supply.Burner},
 		ibctransfertypes.ModuleName: {authtypes.Minter, authtypes.Burner},
-		erc20.ModuleName:            {authtypes.Minter, authtypes.Burner},
 		ibcfeetypes.ModuleName:      nil,
 		icatypes.ModuleName:         nil,
 		mock.ModuleName:             nil,
@@ -264,7 +258,6 @@ type SimApp struct {
 	IBCKeeper            *ibc.Keeper // IBC Keeper must be a pointer in the app, so we can SetRouter on it correctly
 	marshal              *codec.CodecProxy
 	heightTasks          map[int64]*upgradetypes.HeightTasks
-	Erc20Keeper          erc20.Keeper
 
 	ibcScopeKeep capabilitykeeper.ScopedKeeper
 	WasmHandler  wasmkeeper.HandlerOption
@@ -311,7 +304,6 @@ func NewSimApp(
 		token.StoreKey, token.KeyLock,
 		ibctransfertypes.StoreKey, capabilitytypes.StoreKey,
 		ibchost.StoreKey,
-		erc20.StoreKey,
 		wasm.StoreKey,
 		icacontrollertypes.StoreKey, icahosttypes.StoreKey, ibcfeetypes.StoreKey,
 	)
@@ -346,7 +338,6 @@ func NewSimApp(
 	app.subspaces[token.ModuleName] = app.ParamsKeeper.Subspace(token.DefaultParamspace)
 	app.subspaces[ibchost.ModuleName] = app.ParamsKeeper.Subspace(ibchost.ModuleName)
 	app.subspaces[ibctransfertypes.ModuleName] = app.ParamsKeeper.Subspace(ibctransfertypes.ModuleName)
-	app.subspaces[erc20.ModuleName] = app.ParamsKeeper.Subspace(erc20.DefaultParamspace)
 	app.subspaces[wasm.ModuleName] = app.ParamsKeeper.Subspace(wasm.ModuleName)
 	app.subspaces[icacontrollertypes.SubModuleName] = app.ParamsKeeper.Subspace(icacontrollertypes.SubModuleName)
 	app.subspaces[icahosttypes.SubModuleName] = app.ParamsKeeper.Subspace(icahosttypes.SubModuleName)
@@ -453,9 +444,6 @@ func NewSimApp(
 		app.SupplyKeeper, scopedICAHostKeeper, app.MsgServiceRouter(),
 	)
 
-	app.Erc20Keeper = erc20.NewKeeper(app.marshal.GetCdc(), app.keys[erc20.ModuleName], app.subspaces[erc20.ModuleName],
-		app.AccountKeeper, app.SupplyKeeper, app.BankKeeper, app.EvmKeeper, app.TransferKeeper)
-
 	// register the proposal types
 	// 3.register the proposal types
 	govRouter := gov.NewRouter()
@@ -466,13 +454,11 @@ func NewSimApp(
 		AddRoute(mint.RouterKey, mint.NewManageTreasuresProposalHandler(&app.MintKeeper)).
 		AddRoute(ibchost.RouterKey, ibcclient.NewClientUpdateProposalHandler(v2keeper.ClientKeeper)).
 		AddRoute(ibcclienttypes.RouterKey, ibcclient.NewClientUpdateProposalHandler(v2keeper.ClientKeeper)).
-		AddRoute(erc20.RouterKey, erc20.NewProposalHandler(&app.Erc20Keeper)).
 		AddRoute(staking.RouterKey, staking.NewProposalHandler(&app.StakingKeeper))
 	govProposalHandlerRouter := keeper.NewProposalHandlerRouter()
 	govProposalHandlerRouter.AddRoute(params.RouterKey, &app.ParamsKeeper).
 		AddRoute(evm.RouterKey, app.EvmKeeper).
-		AddRoute(mint.RouterKey, &app.MintKeeper).
-		AddRoute(erc20.RouterKey, &app.Erc20Keeper)
+		AddRoute(mint.RouterKey, &app.MintKeeper)
 	app.GovKeeper = gov.NewKeeper(
 		app.marshal.GetCdc(), app.keys[gov.StoreKey], app.ParamsKeeper, app.subspaces[gov.DefaultParamspace],
 		app.SupplyKeeper, stakingKeeper, gov.DefaultParamspace, govRouter,
@@ -481,7 +467,6 @@ func NewSimApp(
 	app.ParamsKeeper.SetGovKeeper(app.GovKeeper)
 	app.EvmKeeper.SetGovKeeper(app.GovKeeper)
 	app.MintKeeper.SetGovKeeper(app.GovKeeper)
-	app.Erc20Keeper.SetGovKeeper(app.GovKeeper)
 
 	// Create static IBC router, add transfer route, then set and seal it
 	ibcRouter := ibcporttypes.NewRouter()
@@ -585,7 +570,6 @@ func NewSimApp(
 		//capabilityModule.NewAppModule(codecProxy, *app.CapabilityKeeper),
 		capability.TNewCapabilityModuleAdapter(codecProxy, *app.CapabilityKeeper),
 		transferModule,
-		erc20.NewAppModule(app.Erc20Keeper),
 		mockModule,
 		wasm.NewAppModule(*app.marshal, &app.wasmKeeper),
 		fee.NewTestFeeAppModule(app.IBCFeeKeeper),
@@ -629,7 +613,6 @@ func NewSimApp(
 		ibctransfertypes.ModuleName,
 		ibchost.ModuleName,
 		evm.ModuleName, crisis.ModuleName, genutil.ModuleName, params.ModuleName, evidence.ModuleName,
-		erc20.ModuleName,
 		mock.ModuleName,
 		wasm.ModuleName,
 		icatypes.ModuleName, ibcfeetypes.ModuleName,

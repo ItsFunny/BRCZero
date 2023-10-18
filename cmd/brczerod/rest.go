@@ -7,8 +7,6 @@ import (
 
 	mintclient "github.com/brc20-collab/brczero/libs/cosmos-sdk/x/mint/client"
 	mintrest "github.com/brc20-collab/brczero/libs/cosmos-sdk/x/mint/client/rest"
-	erc20client "github.com/brc20-collab/brczero/x/erc20/client"
-	erc20rest "github.com/brc20-collab/brczero/x/erc20/client/rest"
 	evmclient "github.com/brc20-collab/brczero/x/evm/client"
 
 	"github.com/brc20-collab/brczero/app/rpc"
@@ -59,7 +57,6 @@ func registerRoutesV1(rs *lcd.RestServer) {
 	tokensrest.RegisterRoutes(rs.CliCtx, v1Router, token.StoreKey)
 	supplyrest.RegisterRoutes(rs.CliCtx, v1Router)
 	evmrest.RegisterRoutes(rs.CliCtx, v1Router)
-	erc20rest.RegisterRoutes(rs.CliCtx, v1Router)
 	wasmrest.RegisterRoutes(rs.CliCtx, v1Router)
 	govrest.RegisterRoutes(rs.CliCtx, v1Router,
 		[]govrest.ProposalRESTHandler{
@@ -73,7 +70,6 @@ func registerRoutesV1(rs *lcd.RestServer) {
 			evmclient.ManageContractByteCodeProposalHandler.RESTHandler(rs.CliCtx),
 			mintclient.ManageTreasuresProposalHandler.RESTHandler(rs.CliCtx),
 			mintclient.ExtraProposalHandler.RESTHandler(rs.CliCtx),
-			erc20client.TokenMappingProposalHandler.RESTHandler(rs.CliCtx),
 			stakingclient.ProposeValidatorProposalHandler.RESTHandler(rs.CliCtx),
 		},
 	)
