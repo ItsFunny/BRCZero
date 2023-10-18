@@ -19,7 +19,6 @@ import (
 	tmdb "github.com/brc20-collab/brczero/libs/tm-db"
 	evmtypes "github.com/brc20-collab/brczero/x/evm/types"
 	"github.com/brc20-collab/brczero/x/evm/watcher"
-	"github.com/brc20-collab/brczero/x/infura"
 	"github.com/brc20-collab/brczero/x/token"
 	"github.com/brc20-collab/brczero/x/wasm"
 )
@@ -124,16 +123,6 @@ func RegisterAppFlag(cmd *cobra.Command) {
 	cmd.Flags().Int64(config.FlagCommitGapOffset, 0, "Offset to stagger ac ahead of proposal")
 	cmd.Flags().MarkHidden(config.FlagCommitGapOffset)
 
-	// flags for infura rpc
-	cmd.Flags().Bool(infura.FlagEnable, false, "Enable infura rpc service")
-	cmd.Flags().String(infura.FlagRedisUrl, "", "Redis url(host:port) of infura rpc service")
-	cmd.Flags().String(infura.FlagRedisAuth, "", "Redis auth of infura rpc service")
-	cmd.Flags().Int(infura.FlagRedisDB, 0, "Redis db of infura rpc service")
-	cmd.Flags().String(infura.FlagMysqlUrl, "", "Mysql url(host:port) of infura rpc service")
-	cmd.Flags().String(infura.FlagMysqlUser, "", "Mysql user of infura rpc service")
-	cmd.Flags().String(infura.FlagMysqlPass, "", "Mysql password of infura rpc service")
-	cmd.Flags().String(infura.FlagMysqlDB, "infura", "Mysql db name of infura rpc service")
-	cmd.Flags().Int(infura.FlagCacheQueueSize, 0, "Cache queue size of infura rpc service")
 	cmd.Flags().Int(config.FlagDebugGcInterval, 0, "Force gc every n heights for debug")
 	cmd.Flags().String(rpc.FlagWebsocket, "8546", "websocket port to listen to")
 	cmd.Flags().Int(backend.FlagLogsLimit, 0, "Maximum number of logs returned when calling eth_getLogs")
