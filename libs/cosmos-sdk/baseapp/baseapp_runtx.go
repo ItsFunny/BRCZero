@@ -89,7 +89,7 @@ func (app *BaseApp) runtxWithInfo(info *runTxInfo, mode runTxMode, txBytes []byt
 	if tx.GetType() != sdk.EvmTxType && mode == runTxModeDeliver {
 		// should update the balance of FeeCollector's account when run non-evm tx
 		// which uses non-infiniteGasMeter during AnteHandleChain
-		app.updateFeeCollectorAccount(false)
+		app.updateFeeCollectorAccount()
 	}
 
 	//init info context
@@ -421,13 +421,13 @@ func (app *BaseApp) asyncDeliverTx(txIndex int) *executeResult {
 
 	if txStatus.stdTx == nil {
 		asyncExe := newExecuteResult(sdkerrors.ResponseDeliverTx(txStatus.decodeErr,
-			0, 0, app.trace), nil, uint32(txIndex), nil, blockHeight, sdk.EmptyWatcher{}, nil, app.parallelTxManage, nil)
+			0, 0, app.trace), nil, uint32(txIndex), nil, blockHeight, sdk.EmptyWatcher{}, nil, app.parallelTxManage)
 		return asyncExe
 	}
 
 	if !txStatus.supportPara {
 		asyncExe := newExecuteResult(abci.ResponseDeliverTx{}, nil, uint32(txIndex), nil,
-			blockHeight, sdk.EmptyWatcher{}, nil, app.parallelTxManage, nil)
+			blockHeight, sdk.EmptyWatcher{}, nil, app.parallelTxManage)
 		return asyncExe
 	}
 
@@ -448,7 +448,7 @@ func (app *BaseApp) asyncDeliverTx(txIndex int) *executeResult {
 	resp.SetType(int(txStatus.stdTx.GetType()))
 
 	asyncExe := newExecuteResult(resp, info.msCacheAnte, uint32(txIndex), info.ctx.ParaMsg(),
-		blockHeight, info.runMsgCtx.GetWatcher(), info.tx.GetMsgs(), app.parallelTxManage, info.ctx.GetFeeSplitInfo())
+		blockHeight, info.runMsgCtx.GetWatcher(), info.tx.GetMsgs(), app.parallelTxManage)
 	app.parallelTxManage.addMultiCache(info.msCacheAnte, info.msCache)
 	return asyncExe
 }

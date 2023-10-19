@@ -7,7 +7,6 @@ import (
 	appconfig "github.com/brc20-collab/brczero/app/config"
 	"github.com/brc20-collab/brczero/libs/system/trace"
 	abci "github.com/brc20-collab/brczero/libs/tendermint/abci/types"
-	"github.com/brc20-collab/brczero/x/wasm/watcher"
 )
 
 // BeginBlock implements the Application interface
@@ -64,7 +63,6 @@ func (app *BRCZeroApp) Commit(req abci.RequestCommit) abci.ResponseCommit {
 	// 2. before commit the block,State#updateToState hasent not called yet,so the proposalBlockPart is not nil which means we wont
 	// 	  call the prerun during commit step(edge case)
 	app.EvmKeeper.Watcher.Commit()
-	watcher.Commit()
 
 	return res
 }

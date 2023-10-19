@@ -9,7 +9,6 @@ import (
 	cosmost "github.com/brc20-collab/brczero/libs/cosmos-sdk/store/types"
 	"github.com/brc20-collab/brczero/libs/tendermint/state"
 	"github.com/brc20-collab/brczero/x/evm/watcher"
-	"github.com/brc20-collab/brczero/x/infura"
 )
 
 // CheckStart check start command's flags. if user set conflict flags return error.
@@ -50,12 +49,7 @@ import (
 // --node-mode=archive(--pruning=nothing) conflicts with --fast-query
 
 var (
-	startDependentElems = []dependentPair{
-		{ // if infura.FlagEnable=true , watcher.FlagFastQuery must be set to true
-			config:       boolItem{name: infura.FlagEnable, expect: true},
-			reliedConfig: boolItem{name: watcher.FlagFastQuery, expect: true},
-		},
-	}
+	startDependentElems = []dependentPair{}
 	// conflicts flags
 	startConflictElems = []conflictPair{
 		// --fast-query      conflict with --pruning=nothing

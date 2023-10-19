@@ -203,9 +203,8 @@ type BaseApp struct { // nolint: maligned
 
 	parallelTxManage *parallelTxManager
 
-	feeCollector      sdk.Coins
-	feeChanged        bool // used to judge whether should update the fee-collector account
-	FeeSplitCollector []*sdk.FeeSplitInfo
+	feeCollector sdk.Coins
+	feeChanged   bool // used to judge whether should update the fee-collector account
 
 	checkTxNum        int64
 	wrappedCheckTxNum int64
@@ -260,7 +259,6 @@ func NewBaseApp(
 		interceptors:     make(map[string]Interceptor),
 
 		checkTxCacheMultiStores: newCacheMultiStoreList(),
-		FeeSplitCollector:       make([]*sdk.FeeSplitInfo, 0),
 	}
 
 	for _, option := range options {
@@ -708,7 +706,6 @@ func (app *BaseApp) getContextForTx(mode runTxMode, txBytes []byte) sdk.Context 
 	if mode == runTxModeDeliver {
 		ctx.SetDeliverSerial()
 	}
-	ctx.SetFeeSplitInfo(&sdk.FeeSplitInfo{})
 
 	return ctx
 }
