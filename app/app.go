@@ -2,6 +2,7 @@ package app
 
 import (
 	"fmt"
+	"github.com/brc20-collab/brczero/x/brcx"
 	"io"
 	"os"
 	"runtime/debug"
@@ -93,6 +94,7 @@ var (
 		slashing.AppModuleBasic{},
 		evidence.AppModuleBasic{},
 		evm.AppModuleBasic{},
+		brcx.AppModuleBasic{},
 	)
 
 	// module account permissions
@@ -135,6 +137,7 @@ type BRCZeroApp struct {
 	ParamsKeeper   params.Keeper
 	EvidenceKeeper evidence.Keeper
 	EvmKeeper      *evm.Keeper
+	BRCXKeeper     *brcx.Keeper
 
 	// the module manager
 	mm *module.Manager
@@ -181,6 +184,7 @@ func NewBRCZeroApp(
 		params.StoreKey,
 		evidence.StoreKey,
 		mpt.StoreKey,
+		brcx.StoreKey,
 	)
 
 	tkeys := sdk.NewTransientStoreKeys(params.TStoreKey)
@@ -243,6 +247,8 @@ func NewBRCZeroApp(
 	evidenceKeeper.SetRouter(evidenceRouter)
 	app.EvidenceKeeper = *evidenceKeeper
 
+	app.BRCXKeeper = brcx.NewKeeper()
+
 	govRouter := gov.NewRouter()
 	govRouter.AddRoute(gov.RouterKey, gov.ProposalHandler).
 		AddRoute(params.RouterKey, params.NewParamChangeProposalHandler(&app.ParamsKeeper)).
@@ -276,6 +282,7 @@ func NewBRCZeroApp(
 		staking.NewAppModule(app.StakingKeeper, app.AccountKeeper, app.SupplyKeeper),
 		evidence.NewAppModule(app.EvidenceKeeper),
 		evm.NewAppModule(app.EvmKeeper, &app.AccountKeeper),
+		brcx.NewAppModule(*app.BRCXKeeper),
 		params.NewAppModule(app.ParamsKeeper),
 	)
 

@@ -2,7 +2,7 @@ package types
 
 const (
 	// ModuleName is the name of the module
-	ModuleName = "slashing"
+	ModuleName = "brcx"
 
 	// StoreKey is the store key string for slashing
 	StoreKey = ModuleName

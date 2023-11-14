@@ -47,7 +47,7 @@ $ <appcli> tx slashing unjail --from mykey
 
 			valAddr := cliCtx.GetFromAddress()
 
-			msg := types.NewMsgUnjail(sdk.ValAddress(valAddr))
+			msg := types.NewMsgCreateContract(sdk.ValAddress(valAddr))
 			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
 		},
 	}

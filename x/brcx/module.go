@@ -18,7 +18,6 @@ import (
 	"github.com/brc20-collab/brczero/libs/cosmos-sdk/types/module"
 	sim "github.com/brc20-collab/brczero/libs/cosmos-sdk/x/simulation"
 	"github.com/brc20-collab/brczero/x/slashing/simulation"
-	stakingkeeper "github.com/brc20-collab/brczero/x/staking/keeper"
 )
 
 var (
@@ -74,18 +73,14 @@ func (AppModuleBasic) GetQueryCmd(cdc *codec.Codec) *cobra.Command {
 type AppModule struct {
 	AppModuleBasic
 
-	keeper        Keeper
-	accountKeeper types.AccountKeeper
-	stakingKeeper stakingkeeper.Keeper
+	keeper Keeper
 }
 
 // NewAppModule creates a new AppModule object
-func NewAppModule(keeper Keeper, accountKeeper types.AccountKeeper, stakingKeeper stakingkeeper.Keeper) AppModule {
+func NewAppModule(keeper Keeper) AppModule {
 	return AppModule{
 		AppModuleBasic: AppModuleBasic{},
 		keeper:         keeper,
-		accountKeeper:  accountKeeper,
-		stakingKeeper:  stakingKeeper,
 	}
 }
 
@@ -120,22 +115,17 @@ func (am AppModule) NewQuerierHandler() sdk.Querier {
 // InitGenesis performs genesis initialization for the slashing module. It returns
 // no validator updates.
 func (am AppModule) InitGenesis(ctx sdk.Context, data json.RawMessage) []abci.ValidatorUpdate {
-	var genesisState GenesisState
-	ModuleCdc.MustUnmarshalJSON(data, &genesisState)
-	InitGenesis(ctx, am.keeper, am.stakingKeeper, genesisState)
 	return []abci.ValidatorUpdate{}
 }
 
 // ExportGenesis returns the exported genesis state as raw bytes for the slashing
 // module.
 func (am AppModule) ExportGenesis(ctx sdk.Context) json.RawMessage {
-	gs := ExportGenesis(ctx, am.keeper)
-	return ModuleCdc.MustMarshalJSON(gs)
+	return nil
 }
 
 // BeginBlock returns the begin blocker for the slashing module.
 func (am AppModule) BeginBlock(ctx sdk.Context, req abci.RequestBeginBlock) {
-	BeginBlocker(ctx, req, am.keeper)
 }
 
 // EndBlock returns the end blocker for the slashing module. It returns no validator
@@ -170,6 +160,5 @@ func (AppModule) RegisterStoreDecoder(sdr sdk.StoreDecoderRegistry) {
 
 // WeightedOperations returns the all the slashing module operations with their respective weights.
 func (am AppModule) WeightedOperations(simState module.SimulationState) []sim.WeightedOperation {
-	return simulation.WeightedOperations(simState.AppParams, simState.Cdc,
-		am.accountKeeper, am.keeper, am.stakingKeeper)
+	return nil
 }

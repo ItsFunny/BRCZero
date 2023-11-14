@@ -6,14 +6,21 @@ import (
 )
 
 const (
-	ModuleName = types.ModuleName
-	StoreKey   = types.StoreKey
-	RouterKey  = types.RouterKey
+	ModuleName   = types.ModuleName
+	StoreKey     = types.StoreKey
+	RouterKey    = types.RouterKey
+	QuerierRoute = types.QuerierRoute
 )
 
 var (
 	RegisterCodec = types.RegisterCodec
 	ModuleCdc     = types.ModuleCdc
 
-	Keeper = keeper.Keeper
+	NewKeeper  = keeper.NewKeeper
+	NewQuerier = keeper.NewQuerier
+)
+
+type (
+	Keeper            = keeper.Keeper
+	MsgCreateContract = types.MsgCreateContract
 )
