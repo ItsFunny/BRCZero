@@ -12,7 +12,7 @@ func NewHandler(k Keeper) sdk.Handler {
 		ctx.SetEventManager(sdk.NewEventManager())
 
 		switch msg := msg.(type) {
-		case types.MsgCreateContract:
+		case types.MsgInscription:
 			return handleMsgCreateContract(ctx, msg, k)
 
 		default:

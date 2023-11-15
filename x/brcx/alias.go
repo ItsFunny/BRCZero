@@ -22,5 +22,5 @@ var (
 
 type (
 	Keeper            = keeper.Keeper
-	MsgCreateContract = types.MsgCreateContract
+	MsgCreateContract = types.MsgInscription
 )

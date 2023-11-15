@@ -1,37 +1,42 @@
 package types
 
-import sdk "github.com/brc20-collab/brczero/libs/cosmos-sdk/types"
+import (
+	"encoding/json"
+	sdk "github.com/brc20-collab/brczero/libs/cosmos-sdk/types"
+)
 
 // verify interface at compile time
-var _ sdk.Msg = &MsgCreateContract{}
+var _ sdk.Msg = &MsgInscription{}
 
-// MsgCreateContract - struct for create contract
-type MsgCreateContract struct {
-	ValidatorAddr sdk.ValAddress `json:"address" yaml:"address"` // address of the validator operator
+// MsgInscription - struct for create contract
+type MsgInscription struct {
+	Inscription        json.RawMessage    `json:"inscription" yaml:"inscription"`
+	InscriptionContext InscriptionContext `json:"inscription_context" yaml:"inscriptionContext"`
 }
 
 // NewMsgUnjail creates a new MsgUnjail instance
-func NewMsgCreateContract(validatorAddr sdk.ValAddress) MsgCreateContract {
-	return MsgCreateContract{
-		ValidatorAddr: validatorAddr,
+func NewMsgCreateContract(Inscription json.RawMessage, ctx InscriptionContext) MsgInscription {
+	return MsgInscription{
+		Inscription:        Inscription,
+		InscriptionContext: ctx,
 	}
 }
 
 // nolint
-func (msg MsgCreateContract) Route() string { return RouterKey }
-func (msg MsgCreateContract) Type() string  { return "create" }
-func (msg MsgCreateContract) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{sdk.AccAddress(msg.ValidatorAddr)}
+func (msg MsgInscription) Route() string { return RouterKey }
+func (msg MsgInscription) Type() string  { return "inscription" }
+func (msg MsgInscription) GetSigners() []sdk.AccAddress {
+	return nil
 }
 
 // GetSignBytes gets the bytes for the message signer to sign on
-func (msg MsgCreateContract) GetSignBytes() []byte {
+func (msg MsgInscription) GetSignBytes() []byte {
 	bz := ModuleCdc.MustMarshalJSON(msg)
 	return sdk.MustSortJSON(bz)
 }
 
 // ValidateBasic validity check for the AnteHandler
-func (msg MsgCreateContract) ValidateBasic() error {
+func (msg MsgInscription) ValidateBasic() error {
 
 	return nil
 }
