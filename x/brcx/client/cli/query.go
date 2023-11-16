@@ -1,21 +1,23 @@
 package cli
 
 import (
+	"strings"
+
+	"github.com/spf13/cobra"
+
 	"github.com/brc20-collab/brczero/libs/cosmos-sdk/client"
 	"github.com/brc20-collab/brczero/libs/cosmos-sdk/client/context"
 	"github.com/brc20-collab/brczero/libs/cosmos-sdk/client/flags"
 	"github.com/brc20-collab/brczero/libs/cosmos-sdk/codec"
 	"github.com/brc20-collab/brczero/x/brcx/internal/types"
-	"github.com/spf13/cobra"
-	"strings"
 )
 
 // GetQueryCmd returns the cli query commands for this module
 func GetQueryCmd(queryRoute string, cdc *codec.Codec) *cobra.Command {
-	// Group slashing queries under a subcommand
+	// Group brcx queries under a subcommand
 	slashingQueryCmd := &cobra.Command{
 		Use:                        types.ModuleName,
-		Short:                      "Querying commands for the slashing module",
+		Short:                      "Querying commands for the brcx module",
 		DisableFlagParsing:         true,
 		SuggestionsMinimumDistance: 2,
 		RunE:                       client.ValidateCmd,
@@ -34,6 +36,7 @@ func GetQueryCmd(queryRoute string, cdc *codec.Codec) *cobra.Command {
 // GetCmdQuerySigningInfo implements the command to query signing info.
 func GetCmdQuerySigningInfo(storeName string, cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
+		//todo
 		Use:   "signing-info [validator-conspub]",
 		Short: "Query a validator's signing information",
 		Long: strings.TrimSpace(`Use a validators' consensus public key to find the signing-info for that validator:
