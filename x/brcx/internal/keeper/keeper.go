@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"fmt"
+	"github.com/brc20-collab/brczero/libs/cosmos-sdk/x/supply/exported"
 
 	"github.com/ethereum/go-ethereum/common"
 
@@ -23,7 +24,7 @@ type Keeper struct {
 	supplyKeeper  SupplyKeeper
 }
 
-func NewKeeper(cdc *codec.CodecProxy, storeKey sdk.StoreKey, logger log.Logger, evmKeeper EVMKeeper, accountKeeper AccountKeeper, bk BankKeeper) *Keeper {
+func NewKeeper(cdc *codec.CodecProxy, storeKey sdk.StoreKey, logger log.Logger, evmKeeper EVMKeeper, accountKeeper AccountKeeper, bk BankKeeper, sk SupplyKeeper) *Keeper {
 	logger = logger.With("module", types.ModuleName)
 	// ensure brcx module account is set
 	if addr := sk.GetModuleAddress(types.ModuleName); addr == nil {

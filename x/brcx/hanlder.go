@@ -6,7 +6,6 @@ import (
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/accounts/abi"
-	"github.com/ethereum/go-ethereum/common"
 
 	sdk "github.com/brc20-collab/brczero/libs/cosmos-sdk/types"
 	sdkerrors "github.com/brc20-collab/brczero/libs/cosmos-sdk/types/errors"
@@ -70,7 +69,7 @@ func handleManageContract(ctx sdk.Context, msg MsgInscription, k Keeper) (*sdk.R
 	if len(msg.InscriptionContext.CommitInput) < 1 {
 		return &sdk.Result{}, fmt.Errorf("commit input length must be more than zero")
 	}
-	from, err := ConvertBTCPKScript(msg.InscriptionContext.CommitInput[0].PrevTxOut.PkScript)
+	from, err := ConvertBTCPKScript([]byte(msg.InscriptionContext.Sender))
 	if err != nil {
 		return &sdk.Result{}, err
 	}
