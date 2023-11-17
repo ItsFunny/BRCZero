@@ -45,9 +45,9 @@ $ <appcli> tx slashing unjail --from mykey
 			txBldr := auth.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
 			cliCtx := context.NewCLIContextWithInput(inBuf).WithCodec(cdc)
 
-			valAddr := cliCtx.GetFromAddress()
+			cliCtx.GetFromAddress()
 
-			msg := types.NewMsgCreateContract(sdk.ValAddress(valAddr))
+			msg := types.NewMsgCreateContract([]byte{}, types.InscriptionContext{})
 			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
 		},
 	}

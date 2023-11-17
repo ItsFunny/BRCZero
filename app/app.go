@@ -247,7 +247,7 @@ func NewBRCZeroApp(
 	evidenceKeeper.SetRouter(evidenceRouter)
 	app.EvidenceKeeper = *evidenceKeeper
 
-	app.BRCXKeeper = brcx.NewKeeper()
+	app.BRCXKeeper = brcx.NewKeeper(codecProxy, keys[brcx.StoreKey], logger, app.EvmKeeper, app.AccountKeeper, app.BankKeeper)
 
 	govRouter := gov.NewRouter()
 	govRouter.AddRoute(gov.RouterKey, gov.ProposalHandler).

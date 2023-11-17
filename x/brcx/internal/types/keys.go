@@ -13,3 +13,11 @@ const (
 	// QuerierRoute is the querier route for slashing
 	QuerierRoute = ModuleName
 )
+
+var (
+	ContractNameKey = []byte{0x01}
+)
+
+func GetContractAddressByName(name string) []byte {
+	return append(ContractNameKey, []byte(name)...)
+}
