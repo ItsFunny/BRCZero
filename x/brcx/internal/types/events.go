@@ -1,5 +1,6 @@
 package types
 
 const (
-	AttributeResult = "result"
+	AttributeResult  = "result"
+	EventTypeCallEvm = "call_evm"
 )

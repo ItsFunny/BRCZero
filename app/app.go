@@ -2,11 +2,12 @@ package app
 
 import (
 	"fmt"
-	"github.com/brc20-collab/brczero/x/brcx"
 	"io"
 	"os"
 	"runtime/debug"
 	"sync"
+
+	"github.com/brc20-collab/brczero/x/brcx"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -103,6 +104,7 @@ var (
 		staking.BondedPoolName:    {supply.Burner, supply.Staking},
 		staking.NotBondedPoolName: {supply.Burner, supply.Staking},
 		gov.ModuleName:            nil,
+		brcx.ModuleName:           nil,
 	}
 
 	onceLog              sync.Once

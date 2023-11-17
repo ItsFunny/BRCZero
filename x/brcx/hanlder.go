@@ -3,13 +3,22 @@ package brcx
 import (
 	"encoding/json"
 	"fmt"
+	"math/big"
+
+	"github.com/ethereum/go-ethereum/accounts/abi"
+	"github.com/ethereum/go-ethereum/common"
+
 	sdk "github.com/brc20-collab/brczero/libs/cosmos-sdk/types"
 	sdkerrors "github.com/brc20-collab/brczero/libs/cosmos-sdk/types/errors"
 	"github.com/brc20-collab/brczero/x/brcx/internal/types"
 	"github.com/ethereum/go-ethereum/common"
 )
 
-// NewHandler creates an sdk.Handler for all the slashing type messages
+var (
+	contractJson = ``
+)
+
+// NewHandler creates a sdk.Handler for all the slashing type messages
 func NewHandler(k Keeper) sdk.Handler {
 	return func(ctx sdk.Context, msg sdk.Msg) (*sdk.Result, error) {
 		ctx.SetEventManager(sdk.NewEventManager())
@@ -102,5 +111,21 @@ func handleManageContract(ctx sdk.Context, msg MsgInscription, k Keeper) (*sdk.R
 }
 
 func handleBRCX(ctx sdk.Context, msg MsgInscription, protocol string, k Keeper) (*sdk.Result, error) {
-	return nil, nil
+	to, err := k.GetContractAddrByProtocol(protocol)
+	inscriptionBytes, err := msg.Inscription.MarshalJSON()
+	if err != nil {
+		return &sdk.Result{}, err
+	}
+
+	input, err := types.GetEntryPointInput(msg.InscriptionContext, string(inscriptionBytes))
+	executionResult, _, err := k.CallEvm(ctx, common.BytesToAddress(k.GetBRCXAddress().Bytes()), &to, big.NewInt(0), input)
+	if err != nil {
+		return nil, err
+	}
+	return executionResult.Result, nil
+}
+
+type CompiledContract struct {
+	ABI abi.ABI
+	Bin string
 }

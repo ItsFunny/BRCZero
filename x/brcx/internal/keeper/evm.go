@@ -13,7 +13,7 @@ import (
 	evmtypes "github.com/brc20-collab/brczero/x/evm/types"
 )
 
-// callEvm execute an evm message from native module
+// CallEvm execute an evm message from native module
 func (k Keeper) CallEvm(ctx sdk.Context, callerAddr common.Address, to *common.Address, value *big.Int, data []byte) (*evmtypes.ExecutionResult, *evmtypes.ResultData, error) {
 
 	config, found := k.evmKeeper.GetChainConfig(ctx)
@@ -57,9 +57,7 @@ func (k Keeper) CallEvm(ctx sdk.Context, callerAddr common.Address, to *common.A
 	st.Csdb.Prepare(ethTxHash, k.evmKeeper.GetBlockHash(), 0)
 
 	st.SetCallToCM(k.evmKeeper.GetCallToCM())
-	//addVMBridgeInnertx(ctx, k.evmKeeper, callerAddr.String(), to, VMBRIDGE_START_INNERTX, value)
 	executionResult, resultData, err, innertxs, contracts := st.TransitionDb(ctx, config)
-	//addVMBridgeInnertx(ctx, k.evmKeeper, callerAddr.String(), to, VMBRIDGE_END_INNERTX, value)
 	if !ctx.IsCheckTx() && !ctx.IsTraceTx() {
 		if innertxs != nil {
 			k.evmKeeper.AddInnerTx(ethTxHash.Hex(), innertxs)
@@ -84,15 +82,15 @@ func (k Keeper) CallEvm(ctx sdk.Context, callerAddr common.Address, to *common.A
 
 	}
 
-	//ctx.EventManager().EmitEvent(
-	//	sdk.NewEvent(
-	//		types.EventTypeWasmCallEvm,
-	//		attributes...,
-	//	),
-	//)
-	//if err != nil {
-	//	return nil, nil, err
-	//}
+	ctx.EventManager().EmitEvent(
+		sdk.NewEvent(
+			types.EventTypeCallEvm,
+			attributes...,
+		),
+	)
+	if err != nil {
+		return nil, nil, err
+	}
 
 	st.Csdb.Commit(false) // write code to db
 
