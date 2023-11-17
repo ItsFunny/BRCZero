@@ -2,6 +2,9 @@ package cli
 
 import (
 	"bufio"
+
+	"github.com/spf13/cobra"
+
 	"github.com/brc20-collab/brczero/libs/cosmos-sdk/client"
 	"github.com/brc20-collab/brczero/libs/cosmos-sdk/client/context"
 	"github.com/brc20-collab/brczero/libs/cosmos-sdk/client/flags"
@@ -10,7 +13,6 @@ import (
 	"github.com/brc20-collab/brczero/libs/cosmos-sdk/x/auth"
 	"github.com/brc20-collab/brczero/libs/cosmos-sdk/x/auth/client/utils"
 	"github.com/brc20-collab/brczero/x/brcx/internal/types"
-	"github.com/spf13/cobra"
 )
 
 // GetTxCmd returns the transaction commands for this module
@@ -44,11 +46,11 @@ $ <appcli> tx slashing unjail --from mykey
 			inBuf := bufio.NewReader(cmd.InOrStdin())
 			txBldr := auth.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
 			cliCtx := context.NewCLIContextWithInput(inBuf).WithCodec(cdc)
+			//todo
+			//valAddr := cliCtx.GetFromAddress()
 
-			valAddr := cliCtx.GetFromAddress()
-
-			msg := types.NewMsgCreateContract(sdk.ValAddress(valAddr))
-			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
+			//msg := types.NewMsgCreateContract(sdk.ValAddress(valAddr))
+			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{})
 		},
 	}
 }
