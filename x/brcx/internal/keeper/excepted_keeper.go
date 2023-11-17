@@ -6,6 +6,7 @@ import (
 
 	sdk "github.com/brc20-collab/brczero/libs/cosmos-sdk/types"
 	authexported "github.com/brc20-collab/brczero/libs/cosmos-sdk/x/auth/exported"
+	"github.com/brc20-collab/brczero/libs/cosmos-sdk/x/supply/exported"
 	evmtypes "github.com/brc20-collab/brczero/x/evm/types"
 )
 
@@ -28,4 +29,11 @@ type AccountKeeper interface {
 
 type BankKeeper interface {
 	SendCoins(ctx sdk.Context, fromAddr sdk.AccAddress, toAddr sdk.AccAddress, amt sdk.Coins) error
+}
+
+type SupplyKeeper interface {
+	SendCoinsFromAccountToModule(ctx sdk.Context, senderAddr sdk.AccAddress, recipientModule string, amt sdk.Coins) error
+	SendCoinsFromModuleToAccount(ctx sdk.Context, senderModule string, recipientAddr sdk.AccAddress, amt sdk.Coins) error
+	GetModuleAccount(ctx sdk.Context, moduleName string) exported.ModuleAccountI
+	GetModuleAddress(moduleName string) sdk.AccAddress
 }
