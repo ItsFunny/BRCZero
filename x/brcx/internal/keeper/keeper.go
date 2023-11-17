@@ -73,7 +73,10 @@ func (k Keeper) GetBRCXAddress() sdk.AccAddress {
 	return k.supplyKeeper.GetModuleAddress(types.ModuleName)
 }
 
-func (k Keeper) GetContractAddrByProtocol(protocol string) (common.Address, error) {
-	//todo
-	return [20]byte{}, nil
+func (k Keeper) GetContractAddrByProtocol(ctx sdk.Context, protocol string) (common.Address, error) {
+	addresses := k.GetContractAddressByName(ctx, protocol)
+	if len(addresses) == 0 {
+		return common.Address{}, fmt.Errorf("protocol %s have not be create", protocol)
+	}
+	return common.BytesToAddress(addresses[0].Bytes()), nil
 }

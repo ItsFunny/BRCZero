@@ -110,7 +110,7 @@ func handleManageContract(ctx sdk.Context, msg MsgInscription, k Keeper) (*sdk.R
 }
 
 func handleBRCX(ctx sdk.Context, msg MsgInscription, protocol string, k Keeper) (*sdk.Result, error) {
-	to, err := k.GetContractAddrByProtocol(protocol)
+	to, err := k.GetContractAddrByProtocol(ctx, protocol)
 	inscriptionBytes, err := msg.Inscription.MarshalJSON()
 	if err != nil {
 		return &sdk.Result{}, err
