@@ -2,7 +2,7 @@ package brcx
 
 import (
 	"github.com/brc20-collab/brczero/x/brcx/internal/keeper"
-	"github.com/brc20-collab/brczero/x/brcx/internal/types"
+	"github.com/brc20-collab/brczero/x/brcx/types"
 )
 
 const (

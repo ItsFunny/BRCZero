@@ -9,7 +9,7 @@ import (
 	ethermint "github.com/brc20-collab/brczero/app/types"
 	sdk "github.com/brc20-collab/brczero/libs/cosmos-sdk/types"
 	tmtypes "github.com/brc20-collab/brczero/libs/tendermint/types"
-	"github.com/brc20-collab/brczero/x/brcx/internal/types"
+	"github.com/brc20-collab/brczero/x/brcx/types"
 	evmtypes "github.com/brc20-collab/brczero/x/evm/types"
 )
 

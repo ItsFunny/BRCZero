@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"github.com/brc20-collab/brczero/x/brcx/client/cli"
 	"github.com/brc20-collab/brczero/x/brcx/client/rest"
-	"github.com/brc20-collab/brczero/x/brcx/internal/types"
+	"github.com/brc20-collab/brczero/x/brcx/types"
 	"math/rand"
 
 	"github.com/gorilla/mux"

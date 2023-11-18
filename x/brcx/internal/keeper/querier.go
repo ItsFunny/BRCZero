@@ -4,7 +4,7 @@ import (
 	sdk "github.com/brc20-collab/brczero/libs/cosmos-sdk/types"
 	sdkerrors "github.com/brc20-collab/brczero/libs/cosmos-sdk/types/errors"
 	abci "github.com/brc20-collab/brczero/libs/tendermint/abci/types"
-	"github.com/brc20-collab/brczero/x/brcx/internal/types"
+	"github.com/brc20-collab/brczero/x/brcx/types"
 )
 
 // NewQuerier creates a new querier for slashing clients.

@@ -12,7 +12,7 @@ import (
 	sdk "github.com/brc20-collab/brczero/libs/cosmos-sdk/types"
 	"github.com/brc20-collab/brczero/libs/cosmos-sdk/x/auth"
 	"github.com/brc20-collab/brczero/libs/cosmos-sdk/x/auth/client/utils"
-	"github.com/brc20-collab/brczero/x/brcx/internal/types"
+	"github.com/brc20-collab/brczero/x/brcx/types"
 )
 
 // GetTxCmd returns the transaction commands for this module

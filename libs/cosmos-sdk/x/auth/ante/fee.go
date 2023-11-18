@@ -1,15 +1,11 @@
 package ante
 
 import (
-	"fmt"
-
 	sdk "github.com/brc20-collab/brczero/libs/cosmos-sdk/types"
+	sdkerrors "github.com/brc20-collab/brczero/libs/cosmos-sdk/types/errors"
 	"github.com/brc20-collab/brczero/libs/cosmos-sdk/x/auth/exported"
 	"github.com/brc20-collab/brczero/libs/cosmos-sdk/x/auth/keeper"
 	"github.com/brc20-collab/brczero/libs/cosmos-sdk/x/auth/types"
-	tmtypes "github.com/brc20-collab/brczero/libs/tendermint/types"
-
-	sdkerrors "github.com/brc20-collab/brczero/libs/cosmos-sdk/types/errors"
 )
 
 var (
@@ -86,46 +82,46 @@ func NewDeductFeeDecorator(ak keeper.AccountKeeper, sk types.SupplyKeeper) Deduc
 }
 
 func (dfd DeductFeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (newCtx sdk.Context, err error) {
-	feeTx, ok := tx.(FeeTx)
-	if !ok {
-		return ctx, sdkerrors.Wrap(sdkerrors.ErrTxDecode, "Tx must be a FeeTx")
-	}
-
-	if addr := dfd.supplyKeeper.GetModuleAddress(types.FeeCollectorName); addr == nil {
-		panic(fmt.Sprintf("%s module account has not been set", types.FeeCollectorName))
-	}
-
-	feePayer := feeTx.FeePayer(ctx)
-	feePayerAcc := dfd.ak.GetAccount(ctx, feePayer)
-
-	if feePayerAcc == nil {
-		return ctx, sdkerrors.Wrapf(sdkerrors.ErrUnknownAddress, "fee payer address: %s does not exist", feePayer)
-	}
-
-	// Note: In order to support the parallel execution of StdTx,
-	// we eliminated the GasConsumed of DeductFees,
-	// otherwise SMB will be triggered when refunding.
-	if tmtypes.HigherThanMercury(ctx.BlockHeight()) {
-		gasMeter := ctx.GasMeter()
-		tmpGasMeter := sdk.GetReusableInfiniteGasMeter()
-		ctx.SetGasMeter(tmpGasMeter)
-		// deduct the fees
-		if !feeTx.GetFee().IsZero() {
-			err = DeductFees(dfd.supplyKeeper, ctx, feePayerAcc, feeTx.GetFee())
-			if err != nil {
-				return ctx, err
-			}
-		}
-		sdk.ReturnInfiniteGasMeter(tmpGasMeter)
-		ctx.SetGasMeter(gasMeter)
-	} else {
-		if !feeTx.GetFee().IsZero() {
-			err = DeductFees(dfd.supplyKeeper, ctx, feePayerAcc, feeTx.GetFee())
-			if err != nil {
-				return ctx, err
-			}
-		}
-	}
+	//feeTx, ok := tx.(FeeTx)
+	//if !ok {
+	//	return ctx, sdkerrors.Wrap(sdkerrors.ErrTxDecode, "Tx must be a FeeTx")
+	//}
+	//
+	//if addr := dfd.supplyKeeper.GetModuleAddress(types.FeeCollectorName); addr == nil {
+	//	panic(fmt.Sprintf("%s module account has not been set", types.FeeCollectorName))
+	//}
+	//
+	//feePayer := feeTx.FeePayer(ctx)
+	//feePayerAcc := dfd.ak.GetAccount(ctx, feePayer)
+	//
+	//if feePayerAcc == nil {
+	//	return ctx, sdkerrors.Wrapf(sdkerrors.ErrUnknownAddress, "fee payer address: %s does not exist", feePayer)
+	//}
+	//
+	//// Note: In order to support the parallel execution of StdTx,
+	//// we eliminated the GasConsumed of DeductFees,
+	//// otherwise SMB will be triggered when refunding.
+	//if tmtypes.HigherThanMercury(ctx.BlockHeight()) {
+	//	gasMeter := ctx.GasMeter()
+	//	tmpGasMeter := sdk.GetReusableInfiniteGasMeter()
+	//	ctx.SetGasMeter(tmpGasMeter)
+	//	// deduct the fees
+	//	if !feeTx.GetFee().IsZero() {
+	//		err = DeductFees(dfd.supplyKeeper, ctx, feePayerAcc, feeTx.GetFee())
+	//		if err != nil {
+	//			return ctx, err
+	//		}
+	//	}
+	//	sdk.ReturnInfiniteGasMeter(tmpGasMeter)
+	//	ctx.SetGasMeter(gasMeter)
+	//} else {
+	//	if !feeTx.GetFee().IsZero() {
+	//		err = DeductFees(dfd.supplyKeeper, ctx, feePayerAcc, feeTx.GetFee())
+	//		if err != nil {
+	//			return ctx, err
+	//		}
+	//	}
+	//}
 
 	return next(ctx, tx, simulate)
 }
