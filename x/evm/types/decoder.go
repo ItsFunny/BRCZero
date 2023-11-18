@@ -18,6 +18,7 @@ import (
 	authtypes "github.com/brc20-collab/brczero/libs/cosmos-sdk/x/auth/types"
 	"github.com/brc20-collab/brczero/libs/tendermint/global"
 	"github.com/brc20-collab/brczero/libs/tendermint/types"
+	brcxtypes "github.com/brc20-collab/brczero/x/brcx/types"
 )
 
 const IGNORE_HEIGHT_CHECKING = -1
@@ -59,6 +60,7 @@ func TxDecoder(cdc codec.CdcAbstraction) sdk.TxDecoder {
 			// only use evmdecoder
 			aminoDecoder,
 			ibcDecoder,
+			brcxtypes.Decoder,
 		} {
 			if tx, err = f(cdc, txBytes); err == nil {
 				tx.SetRaw(txBytes)
@@ -120,8 +122,9 @@ type decodeFunc func(codec.CdcAbstraction, []byte) (sdk.Tx, error)
 // 1. Try to decode as MsgEthereumTx by RLP
 func evmDecoder(_ codec.CdcAbstraction, txBytes []byte) (tx sdk.Tx, err error) {
 	var brczeroTx types.BRCZeroRequestTx
+	var ethbytes []byte
 	if err = rlp.DecodeBytes(txBytes, &brczeroTx); err == nil {
-		ethbytes, err := hex.DecodeString(brczeroTx.HexRlpEncodeTx)
+		ethbytes, err = hex.DecodeString(brczeroTx.HexRlpEncodeTx)
 		if err == nil {
 			var ethTx MsgEthereumTx
 			if err = authtypes.EthereumTxDecode(ethbytes, &ethTx); err == nil {

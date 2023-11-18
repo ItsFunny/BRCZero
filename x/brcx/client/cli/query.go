@@ -9,7 +9,7 @@ import (
 	"github.com/brc20-collab/brczero/libs/cosmos-sdk/client/context"
 	"github.com/brc20-collab/brczero/libs/cosmos-sdk/client/flags"
 	"github.com/brc20-collab/brczero/libs/cosmos-sdk/codec"
-	"github.com/brc20-collab/brczero/x/brcx/internal/types"
+	"github.com/brc20-collab/brczero/x/brcx/types"
 )
 
 // GetQueryCmd returns the cli query commands for this module

@@ -9,7 +9,7 @@ import (
 	"github.com/brc20-collab/brczero/libs/cosmos-sdk/codec"
 	sdk "github.com/brc20-collab/brczero/libs/cosmos-sdk/types"
 	"github.com/brc20-collab/brczero/libs/tendermint/libs/log"
-	"github.com/brc20-collab/brczero/x/brcx/internal/types"
+	"github.com/brc20-collab/brczero/x/brcx/types"
 )
 
 type Keeper struct {

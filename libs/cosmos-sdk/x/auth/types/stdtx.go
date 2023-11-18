@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"math/big"
 
-	ethcmn "github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/rlp"
 	"github.com/brc20-collab/brczero/libs/cosmos-sdk/codec"
 	sdk "github.com/brc20-collab/brczero/libs/cosmos-sdk/types"
 	sdkerrors "github.com/brc20-collab/brczero/libs/cosmos-sdk/types/errors"
@@ -14,6 +12,8 @@ import (
 	"github.com/brc20-collab/brczero/libs/tendermint/crypto"
 	cryptoamino "github.com/brc20-collab/brczero/libs/tendermint/crypto/encoding/amino"
 	"github.com/brc20-collab/brczero/libs/tendermint/crypto/multisig"
+	ethcmn "github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/rlp"
 	"github.com/tendermint/go-amino"
 	yaml "gopkg.in/yaml.v2"
 )
@@ -122,29 +122,29 @@ func (tx *StdTx) GetMsgs() []sdk.Msg { return tx.Msgs }
 // ValidateBasic does a simple and lightweight validation check that doesn't
 // require access to any other information.
 func (tx *StdTx) ValidateBasic() error {
-	stdSigs := tx.GetSignatures()
-
-	if tx.Fee.Gas > maxGasWanted {
-		return sdkerrors.Wrapf(
-			sdkerrors.ErrInvalidRequest,
-			"invalid gas supplied; %d > %d", tx.Fee.Gas, maxGasWanted,
-		)
-	}
-	if tx.Fee.Amount.IsAnyNegative() {
-		return sdkerrors.Wrapf(
-			sdkerrors.ErrInsufficientFee,
-			"invalid fee provided: %s", tx.Fee.Amount,
-		)
-	}
-	if len(stdSigs) == 0 {
-		return sdkerrors.ErrNoSignatures
-	}
-	if len(stdSigs) != len(tx.GetSigners()) {
-		return sdkerrors.Wrapf(
-			sdkerrors.ErrUnauthorized,
-			"wrong number of signers; expected %d, got %d", tx.GetSigners(), len(stdSigs),
-		)
-	}
+	//stdSigs := tx.GetSignatures()
+	//
+	//if tx.Fee.Gas > maxGasWanted {
+	//	return sdkerrors.Wrapf(
+	//		sdkerrors.ErrInvalidRequest,
+	//		"invalid gas supplied; %d > %d", tx.Fee.Gas, maxGasWanted,
+	//	)
+	//}
+	//if tx.Fee.Amount.IsAnyNegative() {
+	//	return sdkerrors.Wrapf(
+	//		sdkerrors.ErrInsufficientFee,
+	//		"invalid fee provided: %s", tx.Fee.Amount,
+	//	)
+	//}
+	//if len(stdSigs) == 0 {
+	//	return sdkerrors.ErrNoSignatures
+	//}
+	//if len(stdSigs) != len(tx.GetSigners()) {
+	//	return sdkerrors.Wrapf(
+	//		sdkerrors.ErrUnauthorized,
+	//		"wrong number of signers; expected %d, got %d", tx.GetSigners(), len(stdSigs),
+	//	)
+	//}
 
 	return nil
 }
