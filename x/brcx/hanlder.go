@@ -1,6 +1,7 @@
 package brcx
 
 import (
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"math/big"
@@ -34,7 +35,7 @@ func NewHandler(k Keeper) sdk.Handler {
 
 func handleInscription(ctx sdk.Context, msg MsgInscription, k Keeper) (*sdk.Result, error) {
 	inscription := make(map[string]interface{})
-	err := json.Unmarshal(msg.Inscription, inscription)
+	err := json.Unmarshal(msg.Inscription, &inscription)
 	if err != nil {
 		return &sdk.Result{}, err
 	}
@@ -49,7 +50,11 @@ func handleInscription(ctx sdk.Context, msg MsgInscription, k Keeper) (*sdk.Resu
 
 	switch protocol {
 	case ManageContractProtocolName:
-		return handleManageContract(ctx, msg, k)
+		result, err := handleManageContract(ctx, msg, k)
+		if err != nil {
+			return result, sdkerrors.Register("handleManageContract failed", 1, err.Error())
+		}
+		return result, nil
 	default:
 		return handleBRCX(ctx, msg, protocol, k)
 	}
@@ -66,10 +71,11 @@ func handleInscription(ctx sdk.Context, msg MsgInscription, k Keeper) (*sdk.Resu
 }
 
 func handleManageContract(ctx sdk.Context, msg MsgInscription, k Keeper) (*sdk.Result, error) {
-	if len(msg.InscriptionContext.CommitInput) < 1 {
-		return &sdk.Result{}, fmt.Errorf("commit input length must be more than zero")
+	pkScript, err := hex.DecodeString(msg.InscriptionContext.Sender)
+	if err != nil {
+		return &sdk.Result{}, err
 	}
-	from, err := ConvertBTCPKScript([]byte(msg.InscriptionContext.Sender))
+	from, err := ConvertBTCPKScript(pkScript)
 	if err != nil {
 		return &sdk.Result{}, err
 	}
@@ -95,6 +101,7 @@ func handleManageContract(ctx sdk.Context, msg MsgInscription, k Keeper) (*sdk.R
 		}
 		result = *executeResult.Result
 		k.InsertContractAddressWithName(ctx, manageContract.Name, contractResult.ContractAddress.Bytes())
+		k.Logger().Error("handleManageContract", "new contract address", contractResult.ContractAddress.Hex())
 	case ManageCallContract:
 		to := common.HexToAddress(manageContract.Contract)
 		executeResult, _, err := k.CallEvm(ctx, common.BytesToAddress(from[:]), &to, common.Big0, calldata)

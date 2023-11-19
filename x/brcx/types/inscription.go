@@ -3,7 +3,6 @@ package types
 import (
 	"encoding/hex"
 	"fmt"
-
 	"github.com/ethereum/go-ethereum/common"
 )
 
@@ -62,4 +61,55 @@ func (h Hash) ValidateBasic() error {
 		return fmt.Errorf("%s error length 32", hex.EncodeToString(h))
 	}
 	return nil
+}
+
+type MsgInscriptionFromOrd struct {
+	Inscription        string                `json:"inscription" yaml:"inscription"`
+	InscriptionContext InscriptionContextOrd `json:"inscription_context" yaml:"inscription_context"`
+}
+
+type InscriptionContextOrd struct {
+	Txid              string `json:"txid"`
+	InscriptionId     string `json:"inscription_id"`
+	InscriptionNumber int64  `json:"inscription_number"`
+	OldSatpoint       string `json:"old_satpoint"`
+	NewSatpoint       string `json:"new_satpoint"`
+	From              struct {
+		Address string `json:"Address"`
+	} `json:"from"`
+	To struct {
+		Address string `json:"Address"`
+	} `json:"to,omitempty"`
+	SatInOutputs bool   `json:"sat_in_outputs"`
+	IsTransfer   bool   `json:"is_transfer"`
+	Blockheight  uint64 `json:"blockheight"`
+	Blocktime    uint32 `json:"blocktime"`
+	Blockhash    string `json:"blockhash"`
+}
+
+func (i InscriptionContextOrd) ConvertToInscriptionContext() (InscriptionContext, error) {
+	txid, err := hex.DecodeString(i.Txid)
+	if err != nil {
+		return InscriptionContext{}, err
+	}
+	blockhash, err := hex.DecodeString(i.Blockhash)
+	if err != nil {
+		return InscriptionContext{}, err
+	}
+	return InscriptionContext{
+		InscriptionId:     i.InscriptionId,
+		InscriptionNumber: i.InscriptionNumber,
+		IsTransfer:        i.IsTransfer,
+		Txid:              txid,
+		Sender:            i.From.Address,
+		Receiver:          i.To.Address,
+		CommitInput:       "",
+		RevealOutput:      "",
+		OldSatPoint:       i.OldSatpoint,
+		NewSatPoint:       i.NewSatpoint,
+
+		BlockHash:   blockhash,
+		BlockTime:   i.Blocktime,
+		BlockHeight: i.Blockheight,
+	}, nil
 }

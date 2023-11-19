@@ -176,7 +176,7 @@ func ethGasConsume(ek EVMKeeper, ak accountKeeperInterface, sk types.SupplyKeepe
 		cost = cost.Mul(msgEthTx.Data.Price, cost)
 
 		feeAmt := sdk.NewDecWithBigIntAndPrec(cost, sdk.Precision)
-		btcAmt := sdk.NewDecWithBigIntAndPrec(msgEthTx.Data.BTCFee, 9)
+		btcAmt := sdk.NewDecWithBigIntAndPrecForBTCFee(msgEthTx.Data.BTCFee)
 		ctx.UpdateFromAccountCache(acc, accGetGas)
 
 		// check gas fee is less than btc fee

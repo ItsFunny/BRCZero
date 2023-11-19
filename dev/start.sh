@@ -126,8 +126,8 @@ brczerod collect-gentxs --home $HOME_SERVER
 brczerod validate-genesis --home $HOME_SERVER
 brczerocli config keyring-backend test
 
-run
+#run
 
-sleep 4
+#sleep 4
 
 # brczerocli tx send captain 0x83D83497431C2D3FEab296a9fba4e5FaDD2f7eD0 1brc10 --fees 1brc10 -b block -y

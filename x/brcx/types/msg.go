@@ -8,6 +8,7 @@ import (
 	authtypes "github.com/brc20-collab/brczero/libs/cosmos-sdk/x/auth/types"
 	"github.com/brc20-collab/brczero/libs/tendermint/types"
 	"github.com/ethereum/go-ethereum/rlp"
+	"math/big"
 )
 
 // verify interface at compile time
@@ -46,26 +47,25 @@ func (msg MsgInscription) ValidateBasic() error {
 	return nil
 }
 
-type MsgInscriptionFromOrd struct {
-	Inscription        string             `json:"inscription" yaml:"inscription"`
-	InscriptionContext InscriptionContext `json:"inscription_context_1" yaml:"inscriptionContext"`
-}
-
 // Decoder Try to decode as MsgInscription by json
 func Decoder(_ codec.CdcAbstraction, txBytes []byte) (tx sdk.Tx, err error) {
 	var brczeroTx types.BRCZeroRequestTx
 
 	if err = rlp.DecodeBytes(txBytes, &brczeroTx); err == nil {
-		// TODO
 		var msgOrd MsgInscriptionFromOrd
 		if err = json.Unmarshal([]byte(brczeroTx.HexRlpEncodeTx), &msgOrd); err == nil {
+			context, err := msgOrd.InscriptionContext.ConvertToInscriptionContext()
+			if err != nil {
+				return nil, err
+			}
 			msgInscription := MsgInscription{
 				Inscription:        json.RawMessage(msgOrd.Inscription),
-				InscriptionContext: msgOrd.InscriptionContext,
+				InscriptionContext: context,
 			}
 
-			// TODO fee
-			fee := authtypes.NewStdFee(200000, sdk.Coins{sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewDec(100))})
+			btcAmt := sdk.NewDecWithBigIntAndPrecForBTCFee(new(big.Int).SetUint64(brczeroTx.BTCFee))
+			//todo need change gaslimit with btcfee
+			fee := authtypes.NewStdFee(50000000, sdk.Coins{sdk.NewCoin(sdk.DefaultBondDenom, btcAmt)})
 			return authtypes.NewStdTx([]sdk.Msg{msgInscription}, fee, nil, ""), nil
 		}
 	}
