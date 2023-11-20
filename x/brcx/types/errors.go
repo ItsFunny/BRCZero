@@ -14,9 +14,17 @@ var (
 )
 
 func ErrUnknownOperationOfManageContract(operation string) *sdkerrors.Error {
-	return sdkerrors.Register(ModuleName, manageContract+1, fmt.Sprintf("%s is unknown operation of manage contract", operation))
+	return sdkerrors.New(ModuleName, manageContract+1, fmt.Sprintf("%s is unknown operation of manage contract", operation))
 }
 
 func ErrValidateBasic(msg string) *sdkerrors.Error {
-	return sdkerrors.Register(ModuleName, manageContract+2, fmt.Sprintf("ManageContract validateBasic error : %s", msg))
+	return sdkerrors.New(ModuleName, manageContract+2, fmt.Sprintf("ManageContract validateBasic error : %s", msg))
+}
+
+func ErrValidateInput(msg string) *sdkerrors.Error {
+	return sdkerrors.New(ModuleName, manageContract+3, msg)
+}
+
+func ErrExecute(msg string) *sdkerrors.Error {
+	return sdkerrors.New(ModuleName, manageContract+4, msg)
 }

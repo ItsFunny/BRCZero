@@ -13,6 +13,15 @@ const (
 	ManageCreateContract       = types.ManageCreateContract
 	ManageCallContract         = types.ManageCallContract
 	ManageContractProtocolName = types.ManageContractProtocolName
+
+	AttributeProtocol                = types.AttributeProtocol
+	EventTypeBRCX                    = types.EventTypeBRCX
+	EventTypeManageContract          = types.EventTypeManageContract
+	AttributeManageContractOperation = types.AttributeManageContractOperation
+
+	AttributeManageContractAddress = types.AttributeManageContractAddress
+	AttributeManageOutput          = types.AttributeManageOutput
+	AttributeManageLog             = types.AttributeManageLog
 )
 
 var (
@@ -23,6 +32,9 @@ var (
 	NewQuerier                          = keeper.NewQuerier
 	ErrUnknownOperationOfManageContract = types.ErrUnknownOperationOfManageContract
 	ConvertBTCPKScript                  = types.ConvertBTCPKScript
+
+	ErrValidateInput = types.ErrValidateInput
+	ErrExecute       = types.ErrExecute
 )
 
 type (

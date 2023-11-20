@@ -2,6 +2,7 @@ package types
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/brc20-collab/brczero/libs/cosmos-sdk/codec"
 	sdk "github.com/brc20-collab/brczero/libs/cosmos-sdk/types"
 	authtypes "github.com/brc20-collab/brczero/libs/cosmos-sdk/x/auth/types"
@@ -14,12 +15,12 @@ var _ sdk.Msg = &MsgInscription{}
 
 // MsgInscription - struct for create contract
 type MsgInscription struct {
-	Inscription        json.RawMessage    `json:"inscription" yaml:"inscription"`
+	Inscription        string             `json:"inscription" yaml:"inscription"`
 	InscriptionContext InscriptionContext `json:"inscription_context" yaml:"inscriptionContext"`
 }
 
 // NewMsgUnjail creates a new MsgUnjail instance
-func NewMsgCreateContract(Inscription json.RawMessage, ctx InscriptionContext) MsgInscription {
+func NewMsgCreateContract(Inscription string, ctx InscriptionContext) MsgInscription {
 	return MsgInscription{
 		Inscription:        Inscription,
 		InscriptionContext: ctx,
@@ -53,10 +54,10 @@ func Decoder(_ codec.CdcAbstraction, txBytes []byte) (tx sdk.Tx, err error) {
 		var msgInscription MsgInscription
 		if err = json.Unmarshal([]byte(brczeroTx.HexRlpEncodeTx), &msgInscription); err == nil {
 			// TODO 1000 is tmp
-			fee := authtypes.NewStdFee(brczeroTx.BTCFee*1000, nil)
+			fee := authtypes.NewStdFee(brczeroTx.BTCFee*10000, nil)
 			return authtypes.NewStdTx([]sdk.Msg{msgInscription}, fee, nil, ""), nil
 		}
 	}
 
-	return nil, err
+	return nil, ErrValidateInput(fmt.Sprintf("brcx msg deocer failed: %s", err))
 }
