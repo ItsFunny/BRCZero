@@ -98,7 +98,7 @@ func handleManageContract(ctx sdk.Context, msg MsgInscription, k Keeper) (*sdk.R
 		}
 		result = *executeResult.Result
 		k.InsertContractAddressWithName(ctx, manageContract.Name, contractResult.ContractAddress.Bytes())
-		manageContractEvent.AppendAttributes(
+		manageContractEvent = manageContractEvent.AppendAttributes(
 			sdk.NewAttribute(AttributeManageContractAddress, contractResult.ContractAddress.Hex()),
 			sdk.NewAttribute(AttributeManageOutput, hex.EncodeToString(contractResult.Ret)))
 		k.Logger().Error("handleManageContract", "new contract address", contractResult.ContractAddress.Hex())
@@ -108,7 +108,7 @@ func handleManageContract(ctx sdk.Context, msg MsgInscription, k Keeper) (*sdk.R
 		if err != nil {
 			return nil, fmt.Errorf("create contract failed: %v", err)
 		}
-		manageContractEvent.AppendAttributes(
+		manageContractEvent = manageContractEvent.AppendAttributes(
 			sdk.NewAttribute(AttributeManageOutput, hex.EncodeToString(contractResult.Ret)),
 		)
 		result = *executeResult.Result
