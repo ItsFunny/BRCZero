@@ -3,29 +3,29 @@ package types
 import (
 	"fmt"
 	"github.com/btcsuite/btcd/chaincfg"
-	"github.com/btcsuite/btcd/txscript"
 	"github.com/btcsuite/btcutil"
 	"github.com/ethereum/go-ethereum/common"
 )
 
-func ConvertBTCPKScript(pkScript []byte) (common.Address, error) {
+func ConvertBTCAddress(str string) (common.Address, error) {
 	from := make([]byte, 0)
-	scriptClass, addrs, num, err := txscript.ExtractPkScriptAddrs(pkScript, &chaincfg.MainNetParams)
+	addr, err := btcutil.DecodeAddress(str, &chaincfg.RegressionNetParams)
 	if err != nil {
-		return common.Address{}, fmt.Errorf("commit input from script is error:%v", err)
-	} else if num != 1 {
-		return common.Address{}, fmt.Errorf("commit input from script is error: num is %d must be 1", num)
-
+		return common.Address{}, fmt.Errorf("convert BTC address is error:%v", err)
 	} else {
-		switch scriptClass {
-		case txscript.PubKeyTy:
-			from = btcutil.Hash160(addrs[0].ScriptAddress())
-		case txscript.PubKeyHashTy:
-			from = addrs[0].ScriptAddress()
-		case txscript.WitnessV0PubKeyHashTy:
-			from = addrs[0].ScriptAddress()
+		if addr == nil {
+			return common.Address{}, fmt.Errorf("the address of converted is empty")
+		}
+		switch addr := addr.(type) {
+		case *btcutil.AddressPubKeyHash:
+			from = addr.ScriptAddress()
+		case *btcutil.AddressPubKey:
+			from = btcutil.Hash160(addr.ScriptAddress())
+		case *btcutil.AddressWitnessPubKeyHash:
+			from = addr.ScriptAddress()
 		default:
-			return common.Address{}, fmt.Errorf("%s can not support type of address", scriptClass.String())
+			fmt.Printf("it's dangerous: %s\n", fmt.Errorf("%s is not support type of address, only support p2pkh p2pk p2wpk", addr.String()))
+			from = btcutil.Hash160(addr.ScriptAddress())
 		}
 	}
 

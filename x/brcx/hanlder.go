@@ -67,11 +67,7 @@ func handleInscription(ctx sdk.Context, msg MsgInscription, k Keeper) (*sdk.Resu
 }
 
 func handleManageContract(ctx sdk.Context, msg MsgInscription, k Keeper) (*sdk.Result, error) {
-	pkScript, err := hex.DecodeString(msg.InscriptionContext.Sender)
-	if err != nil {
-		return nil, ErrValidateInput(fmt.Sprintf("InscriptionContext.Sender %s must be hex: %s ", msg.InscriptionContext.Sender, err))
-	}
-	from, err := ConvertBTCPKScript(pkScript)
+	from, err := ConvertBTCAddress(msg.InscriptionContext.Sender)
 	if err != nil {
 		return nil, ErrValidateInput(fmt.Sprintf("InscriptionContext.Sender %s is not address: %s ", msg.InscriptionContext.Sender, err))
 	}
@@ -101,7 +97,6 @@ func handleManageContract(ctx sdk.Context, msg MsgInscription, k Keeper) (*sdk.R
 		manageContractEvent = manageContractEvent.AppendAttributes(
 			sdk.NewAttribute(AttributeManageContractAddress, contractResult.ContractAddress.Hex()),
 			sdk.NewAttribute(AttributeManageOutput, hex.EncodeToString(contractResult.Ret)))
-		k.Logger().Error("handleManageContract", "new contract address", contractResult.ContractAddress.Hex())
 	case ManageCallContract:
 		to := common.HexToAddress(manageContract.Contract)
 		executeResult, contractResult, err := k.CallEvm(ctx, common.BytesToAddress(from[:]), &to, common.Big0, calldata)

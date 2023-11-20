@@ -31,7 +31,7 @@ var (
 	NewKeeper                           = keeper.NewKeeper
 	NewQuerier                          = keeper.NewQuerier
 	ErrUnknownOperationOfManageContract = types.ErrUnknownOperationOfManageContract
-	ConvertBTCPKScript                  = types.ConvertBTCPKScript
+	ConvertBTCAddress                   = types.ConvertBTCAddress
 
 	ErrValidateInput = types.ErrValidateInput
 	ErrExecute       = types.ErrExecute
