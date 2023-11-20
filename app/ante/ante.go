@@ -39,7 +39,7 @@ func NewAnteHandler(ak auth.AccountKeeper, evmKeeper EVMKeeper, sk types.SupplyK
 		authante.NewConsumeGasForTxSizeDecorator(ak),
 		authante.NewSetPubKeyDecorator(ak), // SetPubKeyDecorator must be called before all signature verification decorators
 		authante.NewValidateSigCountDecorator(ak),
-		authante.NewDeductFeeDecorator(ak, sk),
+		//authante.NewDeductFeeDecorator(ak, sk),
 		authante.NewSigGasConsumeDecorator(ak, sigGasConsumer),
 		authante.NewSigVerificationDecorator(ak),
 		authante.NewIncrementSequenceDecorator(ak), // innermost AnteDecorator
