@@ -17,10 +17,11 @@ const (
 	AttributeProtocol                = types.AttributeProtocol
 	EventTypeBRCX                    = types.EventTypeBRCX
 	EventTypeManageContract          = types.EventTypeManageContract
+	EventTypeEntryPoint              = types.EventTypeEntryPoint
 	AttributeManageContractOperation = types.AttributeManageContractOperation
 
 	AttributeManageContractAddress = types.AttributeManageContractAddress
-	AttributeManageOutput          = types.AttributeManageOutput
+	AttributeEvmOutput             = types.AttributeEvmOutput
 	AttributeManageLog             = types.AttributeManageLog
 )
 
@@ -33,8 +34,12 @@ var (
 	ErrUnknownOperationOfManageContract = types.ErrUnknownOperationOfManageContract
 	ConvertBTCPKScript                  = types.ConvertBTCPKScript
 
-	ErrValidateInput = types.ErrValidateInput
-	ErrExecute       = types.ErrExecute
+	ErrInternal           = types.ErrInternal
+	ErrValidateInput      = types.ErrValidateInput
+	ErrExecute            = types.ErrExecute
+	ErrGetContractAddress = types.ErrGetContractAddress
+	ErrCallEntryPoint     = types.ErrCallEntryPoint
+	ErrPackInput          = types.ErrPackInput
 )
 
 type (

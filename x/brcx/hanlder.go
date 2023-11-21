@@ -6,12 +6,11 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/ethereum/go-ethereum/accounts/abi"
+	"github.com/ethereum/go-ethereum/common"
 
 	sdk "github.com/brc20-collab/brczero/libs/cosmos-sdk/types"
 	sdkerrors "github.com/brc20-collab/brczero/libs/cosmos-sdk/types/errors"
 	"github.com/brc20-collab/brczero/x/brcx/types"
-	"github.com/ethereum/go-ethereum/common"
 )
 
 var (
@@ -62,7 +61,7 @@ func handleInscription(ctx sdk.Context, msg MsgInscription, k Keeper) (*sdk.Resu
 		result.Events = append(result.Events, ctx.EventManager().Events()...)
 		return result, nil
 	default:
-		return handleBRCX(ctx, msg, protocol, k)
+		return handleEntryPoint(ctx, msg, protocol, k)
 	}
 }
 
@@ -100,7 +99,7 @@ func handleManageContract(ctx sdk.Context, msg MsgInscription, k Keeper) (*sdk.R
 		k.InsertContractAddressWithName(ctx, manageContract.Name, contractResult.ContractAddress.Bytes())
 		manageContractEvent = manageContractEvent.AppendAttributes(
 			sdk.NewAttribute(AttributeManageContractAddress, contractResult.ContractAddress.Hex()),
-			sdk.NewAttribute(AttributeManageOutput, hex.EncodeToString(contractResult.Ret)))
+			sdk.NewAttribute(AttributeEvmOutput, hex.EncodeToString(contractResult.Ret)))
 		k.Logger().Error("handleManageContract", "new contract address", contractResult.ContractAddress.Hex())
 	case ManageCallContract:
 		to := common.HexToAddress(manageContract.Contract)
@@ -109,7 +108,7 @@ func handleManageContract(ctx sdk.Context, msg MsgInscription, k Keeper) (*sdk.R
 			return nil, fmt.Errorf("create contract failed: %v", err)
 		}
 		manageContractEvent = manageContractEvent.AppendAttributes(
-			sdk.NewAttribute(AttributeManageOutput, hex.EncodeToString(contractResult.Ret)),
+			sdk.NewAttribute(AttributeEvmOutput, hex.EncodeToString(contractResult.Ret)),
 		)
 		result = *executeResult.Result
 	default:
@@ -120,22 +119,27 @@ func handleManageContract(ctx sdk.Context, msg MsgInscription, k Keeper) (*sdk.R
 	return &result, nil
 }
 
-func handleBRCX(ctx sdk.Context, msg MsgInscription, protocol string, k Keeper) (*sdk.Result, error) {
+func handleEntryPoint(ctx sdk.Context, msg MsgInscription, protocol string, k Keeper) (*sdk.Result, error) {
 	to, err := k.GetContractAddrByProtocol(ctx, protocol)
+	if err != nil {
+		return nil, ErrGetContractAddress(fmt.Sprintf("get contract address by protocol failed: %s", err))
+	}
 	inscriptionBytes, err := json.Marshal(msg.Inscription)
 	if err != nil {
-		return &sdk.Result{}, err
+		return nil, ErrInternal(fmt.Sprintf("marshal inscription failed: %s", err))
 	}
 
 	input, err := types.GetEntryPointInput(msg.InscriptionContext, string(inscriptionBytes))
-	executionResult, _, err := k.CallEvm(ctx, common.BytesToAddress(k.GetBRCXAddress().Bytes()), &to, big.NewInt(0), input)
 	if err != nil {
-		return nil, err
+		return nil, ErrPackInput(fmt.Sprintf("pack entry point input failed: %s", err))
 	}
-	return executionResult.Result, nil
-}
 
-type CompiledContract struct {
-	ABI abi.ABI
-	Bin string
+	executionResult, contractResult, err := k.CallEvm(ctx, common.BytesToAddress(k.GetBRCXAddress().Bytes()), &to, big.NewInt(0), input)
+	if err != nil {
+		return nil, ErrCallEntryPoint(fmt.Sprintf("call entryPoint failed: %s", err))
+	}
+
+	ctx.EventManager().EmitEvent(sdk.NewEvent(types.EventTypeEntryPoint, sdk.NewAttribute(AttributeEvmOutput, hex.EncodeToString(contractResult.Ret))))
+
+	return executionResult.Result, nil
 }

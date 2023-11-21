@@ -3,6 +3,7 @@ package types
 const (
 	EventTypeBRCX           = ModuleName
 	EventTypeManageContract = "manage_contract"
+	EventTypeEntryPoint     = "entry_point"
 	EventTypeCallEvm        = "call_evm"
 
 	AttributeResult   = "result"
@@ -10,6 +11,6 @@ const (
 
 	AttributeManageContractOperation = "operation"
 	AttributeManageContractAddress   = "contract_addrss"
-	AttributeManageOutput            = "output"
+	AttributeEvmOutput               = "evm_output"
 	AttributeManageLog               = "log"
 )

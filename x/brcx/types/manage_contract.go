@@ -3,6 +3,7 @@ package types
 import (
 	"encoding/hex"
 	"fmt"
+
 	"github.com/ethereum/go-ethereum/common"
 )
 
@@ -38,7 +39,7 @@ func (mc ManageContract) ValidateBasic() error {
 		return ErrUnknownOperationOfManageContract(mc.Operation)
 	}
 	if _, err := hex.DecodeString(mc.CallData); err != nil {
-		return ErrValidateBasic(fmt.Sprintf("data is error:"))
+		return ErrValidateBasic(fmt.Sprintf("decode callData error: %s", err.Error()))
 	}
 
 	return nil
