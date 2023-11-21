@@ -115,12 +115,8 @@ func handleEntryPoint(ctx sdk.Context, msg MsgInscription, protocol string, k Ke
 	if err != nil {
 		return nil, ErrGetContractAddress(fmt.Sprintf("get contract address by protocol failed: %s", err))
 	}
-	inscriptionBytes, err := json.Marshal(msg.Inscription)
-	if err != nil {
-		return nil, ErrInternal(fmt.Sprintf("marshal inscription failed: %s", err))
-	}
 
-	input, err := types.GetEntryPointInput(msg.InscriptionContext, string(inscriptionBytes))
+	input, err := types.GetEntryPointInput(msg.InscriptionContext, msg.Inscription)
 	if err != nil {
 		return nil, ErrPackInput(fmt.Sprintf("pack entry point input failed: %s", err))
 	}

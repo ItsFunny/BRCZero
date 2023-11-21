@@ -3,11 +3,13 @@ package types
 import (
 	"encoding/json"
 	"fmt"
+
+	"github.com/ethereum/go-ethereum/rlp"
+
 	"github.com/brc20-collab/brczero/libs/cosmos-sdk/codec"
 	sdk "github.com/brc20-collab/brczero/libs/cosmos-sdk/types"
 	authtypes "github.com/brc20-collab/brczero/libs/cosmos-sdk/x/auth/types"
 	"github.com/brc20-collab/brczero/libs/tendermint/types"
-	"github.com/ethereum/go-ethereum/rlp"
 )
 
 // verify interface at compile time
@@ -54,7 +56,7 @@ func Decoder(_ codec.CdcAbstraction, txBytes []byte) (tx sdk.Tx, err error) {
 		var msgInscription MsgInscription
 		if err = json.Unmarshal([]byte(brczeroTx.HexRlpEncodeTx), &msgInscription); err == nil {
 			// TODO 1000 is tmp
-			fee := authtypes.NewStdFee(brczeroTx.BTCFee*10000, nil)
+			fee := authtypes.NewStdFee(50000000, nil)
 			return authtypes.NewStdTx([]sdk.Msg{msgInscription}, fee, nil, ""), nil
 		}
 	}
