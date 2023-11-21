@@ -7,13 +7,12 @@ set -o errexit
 set -a
 set -m
 
-echo "************* Start brczero node... *************"
-./testnet.sh -s -i -n 5 -r 1
-## val0 26656  26657  8545
-## val1 26756  26757  8645
-## val2 26856  26857  8745
-## val3 26956  26957  8845
-## rpc  27056  27057  8945
+self_path=$(pwd)
+# val0 26656  26657  8545
+# val1 26756  26757  8645
+# val2 26856  26857  8745
+# val3 26956  26957  8845
+# rpc  27056  27057  8945
 
 echo "************* Start btc node... *************"
 rm -rf ./bitcoin-data/regtest
@@ -26,65 +25,69 @@ docker exec -it local_bitcoin_node bitcoin-cli generatetoaddress 120 bcrt1qd28je
 docker exec -it local_bitcoin_node bitcoin-cli -rpcwallet=testwallet_01 getwalletinfo
 
 echo "************* Start ord... *************"
-cd ~/rust/BRC20S
+cd /Users/oker/workspace/rust/okx/BRC20S
 
 rm -rf ./_cache1
 nohup ./target/debug/ord \
-  --log-level=DEBUG \
+  --log-level=INFO \
   --data-dir=./_cache1 \
   --rpc-url=http://localhost:18443 \
   --regtest \
   --bitcoin-rpc-user bitcoinrpc \
   --bitcoin-rpc-pass bitcoinrpc \
   --brczero-rpc-url=http://127.0.0.1:26657 \
-  --first-brczero-height=120 \
-  server --http-port=80 >/dev/null 2>&1 &
+  --first-brc20-height=120 \
+  server --http-port=80 >./ord.log 2>&1 &
+sleep 5
 
-rm -rf ./_cache2
-nohup ./target/debug/ord \
-  --log-level=DEBUG \
-  --data-dir=./_cache2 \
-  --rpc-url=http://localhost:18443 \
-  --regtest \
-  --bitcoin-rpc-user bitcoinrpc \
-  --bitcoin-rpc-pass bitcoinrpc \
-  --brczero-rpc-url=http://127.0.0.1:26757 \
-  --first-brczero-height=120 \
-  server --http-port=81 >/dev/null 2>&1 &
-
-rm -rf ./_cache3
-nohup ./target/debug/ord \
- --log-level=DEBUG \
- --data-dir=./_cache3 \
- --rpc-url=http://localhost:18443 \
- --regtest \
- --bitcoin-rpc-user bitcoinrpc \
- --bitcoin-rpc-pass bitcoinrpc \
- --brczero-rpc-url=http://127.0.0.1:26857 \
- --first-brczero-height=120 \
- server --http-port=82 >/dev/null 2>&1 &
-
-rm -rf ./_cache4
-nohup ./target/debug/ord \
---log-level=DEBUG \
---data-dir=./_cache4 \
---rpc-url=http://localhost:18443 \
---regtest \
---bitcoin-rpc-user bitcoinrpc \
---bitcoin-rpc-pass bitcoinrpc \
---brczero-rpc-url=http://127.0.0.1:26957 \
---first-brczero-height=120 \
-server --http-port=83 >/dev/null 2>&1 &
-
-rm -rf ./_cache5
-nohup ./target/debug/ord \
- --log-level=DEBUG \
- --data-dir=./_cache5 \
- --rpc-url=http://localhost:18443 \
- --regtest \
- --bitcoin-rpc-user bitcoinrpc \
- --bitcoin-rpc-pass bitcoinrpc \
- --brczero-rpc-url=http://127.0.0.1:27057 \
- --first-brczero-height=120 \
- server --http-port=84 >/dev/null 2>&1 &
+echo "************* Start brczero node... *************"
+cd $self_path
+./testnet.sh -s -i -n 1 ## -r 1
+#rm -rf ./_cache2
+#nohup ./target/debug/ord \
+#  --log-level=DEBUG \
+#  --data-dir=./_cache2 \
+#  --rpc-url=http://localhost:18443 \
+#  --regtest \
+#  --bitcoin-rpc-user bitcoinrpc \
+#  --bitcoin-rpc-pass bitcoinrpc \
+#  --brczero-rpc-url=http://127.0.0.1:26757 \
+#  --first-brczero-height=120 \
+#  server --http-port=81 >/dev/null 2>&1 &
+#
+#rm -rf ./_cache3
+#nohup ./target/debug/ord \
+# --log-level=DEBUG \
+# --data-dir=./_cache3 \
+# --rpc-url=http://localhost:18443 \
+# --regtest \
+# --bitcoin-rpc-user bitcoinrpc \
+# --bitcoin-rpc-pass bitcoinrpc \
+# --brczero-rpc-url=http://127.0.0.1:26857 \
+# --first-brczero-height=120 \
+# server --http-port=82 >/dev/null 2>&1 &
+#
+#rm -rf ./_cache4
+#nohup ./target/debug/ord \
+#--log-level=DEBUG \
+#--data-dir=./_cache4 \
+#--rpc-url=http://localhost:18443 \
+#--regtest \
+#--bitcoin-rpc-user bitcoinrpc \
+#--bitcoin-rpc-pass bitcoinrpc \
+#--brczero-rpc-url=http://127.0.0.1:26957 \
+#--first-brczero-height=120 \
+#server --http-port=83 >/dev/null 2>&1 &
+#
+#rm -rf ./_cache5
+#nohup ./target/debug/ord \
+# --log-level=DEBUG \
+# --data-dir=./_cache5 \
+# --rpc-url=http://localhost:18443 \
+# --regtest \
+# --bitcoin-rpc-user bitcoinrpc \
+# --bitcoin-rpc-pass bitcoinrpc \
+# --brczero-rpc-url=http://127.0.0.1:27057 \
+# --first-brczero-height=120 \
+# server --http-port=84 >/dev/null 2>&1 &
 

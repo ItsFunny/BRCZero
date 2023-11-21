@@ -32,7 +32,7 @@ var (
 	NewKeeper                           = keeper.NewKeeper
 	NewQuerier                          = keeper.NewQuerier
 	ErrUnknownOperationOfManageContract = types.ErrUnknownOperationOfManageContract
-	ConvertBTCPKScript                  = types.ConvertBTCPKScript
+	ConvertBTCAddress                   = types.ConvertBTCAddress
 
 	ErrInternal           = types.ErrInternal
 	ErrValidateInput      = types.ErrValidateInput

@@ -19,9 +19,9 @@
             "type": "bool"
           },
           {
-            "internalType": "bytes[]",
+            "internalType": "string",
             "name": "txid",
-            "type": "bytes[]"
+            "type": "string"
           },
           {
             "internalType": "string",
@@ -54,9 +54,9 @@
             "type": "string"
           },
           {
-            "internalType": "bytes[]",
+            "internalType": "string",
             "name": "blockHash",
-            "type": "bytes[]"
+            "type": "string"
           },
           {
             "internalType": "uint32",
