@@ -13,10 +13,6 @@ import (
 	"github.com/brc20-collab/brczero/x/brcx/types"
 )
 
-var (
-	contractJson = ``
-)
-
 // NewHandler creates a sdk.Handler for all the slashing type messages
 func NewHandler(k Keeper) sdk.Handler {
 	return func(ctx sdk.Context, msg sdk.Msg) (*sdk.Result, error) {
