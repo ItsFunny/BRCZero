@@ -362,6 +362,9 @@ func (app *BaseApp) DeliverRealTx(txes abci.TxEssentials) abci.ResponseDeliverTx
 	info, err := app.runTx(runTxModeDeliver, realTx.GetRaw(), realTx, LatestSimulateTxHeight)
 	if err != nil {
 		deliverTx = sdkerrors.ResponseDeliverTx(err, info.gInfo.GasWanted, info.gInfo.GasUsed, app.trace)
+		if info.result != nil && len(info.result.Events) != 0 {
+			deliverTx.Events = info.result.Events.ToABCIEvents()
+		}
 	} else {
 		deliverTx = abci.ResponseDeliverTx{
 			GasWanted: int64(info.gInfo.GasWanted), // TODO: Should type accept unsigned ints?

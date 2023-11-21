@@ -908,6 +908,9 @@ func (app *BaseApp) runMsgs(ctx sdk.Context, msgs []sdk.Msg, mode runTxMode) (*s
 
 		msgResult, err := handler(ctx, msg)
 		if err != nil {
+			if msgResult != nil && len(msgResult.Events) != 0 {
+				return &sdk.Result{Events: msgResult.Events}, sdkerrors.Wrapf(err, "failed to execute message; message index: %d", i)
+			}
 			return nil, sdkerrors.Wrapf(err, "failed to execute message; message index: %d", i)
 		}
 

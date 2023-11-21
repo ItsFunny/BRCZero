@@ -14,6 +14,7 @@ import (
 	authrest "github.com/brc20-collab/brczero/libs/cosmos-sdk/x/auth/client/rest"
 	bankrest "github.com/brc20-collab/brczero/libs/cosmos-sdk/x/bank/client/rest"
 	supplyrest "github.com/brc20-collab/brczero/libs/cosmos-sdk/x/supply/client/rest"
+	brcxrest "github.com/brc20-collab/brczero/x/brcx/client/rest"
 	dist "github.com/brc20-collab/brczero/x/distribution"
 	distr "github.com/brc20-collab/brczero/x/distribution"
 	distrest "github.com/brc20-collab/brczero/x/distribution/client/rest"
@@ -69,6 +70,7 @@ func registerRoutesV1(rs *lcd.RestServer) {
 		},
 	)
 	mintrest.RegisterRoutes(rs.CliCtx, v1Router)
+	brcxrest.RegisterRoutes(rs.CliCtx, v1Router)
 
 }
 

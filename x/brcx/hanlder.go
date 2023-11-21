@@ -20,10 +20,21 @@ func NewHandler(k Keeper) sdk.Handler {
 
 		switch msg := msg.(type) {
 		case types.MsgInscription:
-			return handleInscription(ctx, msg, k)
+			ctx.EventManager().EmitEvent(
+				sdk.NewEvent(
+					EventTypeBRCX,
+					sdk.NewAttribute(AttributeBTCTXID, msg.InscriptionContext.Txid),
+				),
+			)
+			result, err := handleInscription(ctx, msg, k)
+			if err != nil {
+				return &sdk.Result{Events: ctx.EventManager().Events()}, err
+			}
+			result.Events = append(result.Events, ctx.EventManager().Events()...)
+			return result, err
 
 		default:
-			return nil, sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "unrecognized %s message type: %T", ModuleName, msg)
+			return &sdk.Result{Events: ctx.EventManager().Events()}, sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "unrecognized %s message type: %T", ModuleName, msg)
 		}
 	}
 }
@@ -44,7 +55,7 @@ func handleInscription(ctx sdk.Context, msg MsgInscription, k Keeper) (*sdk.Resu
 	}
 	ctx.EventManager().EmitEvent(
 		sdk.NewEvent(
-			EventTypeBRCX,
+			EventTypeBRCXProtocol,
 			sdk.NewAttribute(AttributeProtocol, protocol),
 		),
 	)
@@ -54,7 +65,6 @@ func handleInscription(ctx sdk.Context, msg MsgInscription, k Keeper) (*sdk.Resu
 		if err != nil {
 			return result, err
 		}
-		result.Events = append(result.Events, ctx.EventManager().Events()...)
 		return result, nil
 	default:
 		return handleEntryPoint(ctx, msg, protocol, k)
@@ -62,6 +72,9 @@ func handleInscription(ctx sdk.Context, msg MsgInscription, k Keeper) (*sdk.Resu
 }
 
 func handleManageContract(ctx sdk.Context, msg MsgInscription, k Keeper) (*sdk.Result, error) {
+	if msg.InscriptionContext.IsTransfer {
+		return nil, ErrValidateInput("manageContract can't deal inscription of transfer")
+	}
 	from, err := ConvertBTCAddress(msg.InscriptionContext.Sender)
 	if err != nil {
 		return nil, ErrValidateInput(fmt.Sprintf("InscriptionContext.Sender %s is not address: %s ", msg.InscriptionContext.Sender, err))

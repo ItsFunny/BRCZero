@@ -16,6 +16,7 @@ const (
 
 	AttributeProtocol                = types.AttributeProtocol
 	EventTypeBRCX                    = types.EventTypeBRCX
+	EventTypeBRCXProtocol            = types.EventTypeBRCXProtocol
 	EventTypeManageContract          = types.EventTypeManageContract
 	EventTypeEntryPoint              = types.EventTypeEntryPoint
 	AttributeManageContractOperation = types.AttributeManageContractOperation
@@ -23,6 +24,7 @@ const (
 	AttributeManageContractAddress = types.AttributeManageContractAddress
 	AttributeEvmOutput             = types.AttributeEvmOutput
 	AttributeManageLog             = types.AttributeManageLog
+	AttributeBTCTXID               = types.AttributeBTCTXID
 )
 
 var (
