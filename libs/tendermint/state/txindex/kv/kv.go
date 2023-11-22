@@ -6,7 +6,6 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"github.com/ethereum/go-ethereum/common/hexutil"
 	"strconv"
 	"strings"
 	"time"
@@ -133,7 +132,7 @@ func (txi *TxIndex) AddBatch(b *txindex.Batch) error {
 		if len(result.Result.Info) != 0 {
 			var info ResultInfo
 			if err := json.Unmarshal([]byte(result.Result.Info), &info); err == nil {
-				btcHash, err := hexutil.Decode(info.BTCTxid)
+				btcHash, err := hex.DecodeString(info.BTCTxid)
 				if err == nil {
 					storeBatch.Set(btcHash, rawBytes)
 				}
