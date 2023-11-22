@@ -14,7 +14,7 @@ import (
 )
 
 // CallEvm execute an evm message from native module
-func (k Keeper) CallEvm(ctx sdk.Context, callerAddr common.Address, to *common.Address, value *big.Int, data []byte) (*evmtypes.ExecutionResult, *evmtypes.ResultData, error) {
+func (k Keeper) CallEvm(ctx sdk.Context, callerAddr common.Address, to *common.Address, value *big.Int, data []byte, info *types.ResultInfo) (*evmtypes.ExecutionResult, *evmtypes.ResultData, error) {
 
 	config, found := k.evmKeeper.GetChainConfig(ctx)
 	if !found {
@@ -31,6 +31,7 @@ func (k Keeper) CallEvm(ctx sdk.Context, callerAddr common.Address, to *common.A
 		acc = k.accountKeeper.NewAccountWithAddress(ctx, callerAddr.Bytes())
 	}
 	nonce := acc.GetSequence()
+	info.Nonce = nonce
 	txHash := tmtypes.Tx(ctx.TxBytes()).Hash()
 	ethTxHash := common.BytesToHash(txHash)
 

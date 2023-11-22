@@ -4,7 +4,9 @@ import (
 	"bytes"
 	"context"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"strconv"
 	"strings"
 	"time"
@@ -24,6 +26,14 @@ const (
 	defaultTimeOut  = 5 * time.Second
 	maxQueryRange   = 256
 )
+
+type ResultInfo struct {
+	BTCTxid   string `json:"btc_txid"`
+	EvmCaller string `json:"evm_caller"`
+	EvmTo     string `json:"evm_to"`
+	Nonce     uint64 `json:"nonce"`
+	CallData  string `json:"call_data"`
+}
 
 var _ txindex.TxIndexer = (*TxIndex)(nil)
 
@@ -120,6 +130,15 @@ func (txi *TxIndex) AddBatch(b *txindex.Batch) error {
 			return err
 		}
 		storeBatch.Set(hash, rawBytes)
+		if len(result.Result.Info) != 0 {
+			var info ResultInfo
+			if err := json.Unmarshal([]byte(result.Result.Info), &info); err == nil {
+				btcHash, err := hexutil.Decode(info.BTCTxid)
+				if err == nil {
+					storeBatch.Set(btcHash, rawBytes)
+				}
+			}
+		}
 	}
 
 	storeBatch.WriteSync()

@@ -376,7 +376,9 @@ func (app *BaseApp) DeliverRealTx(txes abci.TxEssentials) abci.ResponseDeliverTx
 	}
 	deliverTx.SetHash(realTx.TxHash())
 	deliverTx.SetType(int(realTx.GetType()))
-
+	if len(info.result.Info) != 0 {
+		deliverTx.Info = string(info.result.Info)
+	}
 	return deliverTx
 }
 

@@ -48,4 +48,5 @@ type (
 	Keeper         = keeper.Keeper
 	MsgInscription = types.MsgInscription
 	ManageContract = types.ManageContract
+	ResultInfo     = types.ResultInfo
 )

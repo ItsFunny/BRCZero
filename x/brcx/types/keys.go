@@ -12,6 +12,8 @@ const (
 
 	// QuerierRoute is the querier route for slashing
 	QuerierRoute = ModuleName
+
+	MsgInscriptionType = "inscription"
 )
 
 var (

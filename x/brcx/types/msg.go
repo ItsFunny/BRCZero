@@ -31,7 +31,7 @@ func NewMsgCreateContract(Inscription string, ctx InscriptionContext) MsgInscrip
 
 // nolint
 func (msg MsgInscription) Route() string { return RouterKey }
-func (msg MsgInscription) Type() string  { return "inscription" }
+func (msg MsgInscription) Type() string  { return MsgInscriptionType }
 func (msg MsgInscription) GetSigners() []sdk.AccAddress {
 	return nil
 }

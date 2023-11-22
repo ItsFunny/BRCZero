@@ -26,11 +26,15 @@ func NewHandler(k Keeper) sdk.Handler {
 					sdk.NewAttribute(AttributeBTCTXID, msg.InscriptionContext.Txid),
 				),
 			)
-			result, err := handleInscription(ctx, msg, k)
+			info := types.ResultInfo{BTCTxid: msg.InscriptionContext.Txid}
+			result, err := handleInscription(ctx, msg, k, &info)
+			// json.Marshal can not be error. even if error it hash a few influence with execute of transaction.
+			buff, _ := json.Marshal(info)
 			if err != nil {
-				return &sdk.Result{Events: ctx.EventManager().Events()}, err
+				return &sdk.Result{Events: ctx.EventManager().Events(), Info: buff}, err
 			}
 			result.Events = append(result.Events, ctx.EventManager().Events()...)
+			result.Info = buff
 			return result, err
 
 		default:
@@ -39,7 +43,7 @@ func NewHandler(k Keeper) sdk.Handler {
 	}
 }
 
-func handleInscription(ctx sdk.Context, msg MsgInscription, k Keeper) (*sdk.Result, error) {
+func handleInscription(ctx sdk.Context, msg MsgInscription, k Keeper, info *ResultInfo) (*sdk.Result, error) {
 	inscription := make(map[string]interface{})
 	err := json.Unmarshal([]byte(msg.Inscription), &inscription)
 	if err != nil {
@@ -61,17 +65,17 @@ func handleInscription(ctx sdk.Context, msg MsgInscription, k Keeper) (*sdk.Resu
 	)
 	switch protocol {
 	case ManageContractProtocolName:
-		result, err := handleManageContract(ctx, msg, k)
+		result, err := handleManageContract(ctx, msg, k, info)
 		if err != nil {
 			return result, err
 		}
 		return result, nil
 	default:
-		return handleEntryPoint(ctx, msg, protocol, k)
+		return handleEntryPoint(ctx, msg, protocol, k, info)
 	}
 }
 
-func handleManageContract(ctx sdk.Context, msg MsgInscription, k Keeper) (*sdk.Result, error) {
+func handleManageContract(ctx sdk.Context, msg MsgInscription, k Keeper, info *ResultInfo) (*sdk.Result, error) {
 	if msg.InscriptionContext.IsTransfer {
 		return nil, ErrValidateInput("manageContract can't deal inscription of transfer")
 	}
@@ -79,6 +83,7 @@ func handleManageContract(ctx sdk.Context, msg MsgInscription, k Keeper) (*sdk.R
 	if err != nil {
 		return nil, ErrValidateInput(fmt.Sprintf("InscriptionContext.Sender %s is not address: %s ", msg.InscriptionContext.Sender, err))
 	}
+	info.EvmCaller = from.String()
 
 	var manageContract ManageContract
 	if err := json.Unmarshal([]byte(msg.Inscription), &manageContract); err != nil {
@@ -92,11 +97,12 @@ func handleManageContract(ctx sdk.Context, msg MsgInscription, k Keeper) (*sdk.R
 	if err != nil {
 		return nil, ErrValidateInput(fmt.Sprintf("Inscription data is not hex: %s ", err))
 	}
+	info.CallData = manageContract.CallData
 	manageContractEvent := sdk.NewEvent(EventTypeManageContract, sdk.NewAttribute(AttributeManageContractOperation, manageContract.Operation))
 	var result sdk.Result
 	switch manageContract.Operation {
 	case ManageCreateContract:
-		executeResult, contractResult, err := k.CallEvm(ctx, common.BytesToAddress(from[:]), nil, common.Big0, calldata)
+		executeResult, contractResult, err := k.CallEvm(ctx, common.BytesToAddress(from[:]), nil, common.Big0, calldata, info)
 		if err != nil {
 			return nil, ErrExecute(fmt.Sprintf("create contract failed: %s", err))
 		}
@@ -107,7 +113,8 @@ func handleManageContract(ctx sdk.Context, msg MsgInscription, k Keeper) (*sdk.R
 			sdk.NewAttribute(AttributeEvmOutput, hex.EncodeToString(contractResult.Ret)))
 	case ManageCallContract:
 		to := common.HexToAddress(manageContract.Contract)
-		executeResult, contractResult, err := k.CallEvm(ctx, common.BytesToAddress(from[:]), &to, common.Big0, calldata)
+		info.EvmTo = to.String()
+		executeResult, contractResult, err := k.CallEvm(ctx, common.BytesToAddress(from[:]), &to, common.Big0, calldata, info)
 		if err != nil {
 			return nil, fmt.Errorf("create contract failed: %v", err)
 		}
@@ -123,18 +130,21 @@ func handleManageContract(ctx sdk.Context, msg MsgInscription, k Keeper) (*sdk.R
 	return &result, nil
 }
 
-func handleEntryPoint(ctx sdk.Context, msg MsgInscription, protocol string, k Keeper) (*sdk.Result, error) {
+func handleEntryPoint(ctx sdk.Context, msg MsgInscription, protocol string, k Keeper, info *ResultInfo) (*sdk.Result, error) {
+	from := common.BytesToAddress(k.GetBRCXAddress().Bytes())
+	info.EvmCaller = from.String()
 	to, err := k.GetContractAddrByProtocol(ctx, protocol)
 	if err != nil {
 		return nil, ErrGetContractAddress(fmt.Sprintf("get contract address by protocol failed: %s", err))
 	}
-
+	info.EvmTo = to.String()
 	input, err := types.GetEntryPointInput(msg.InscriptionContext, msg.Inscription)
 	if err != nil {
 		return nil, ErrPackInput(fmt.Sprintf("pack entry point input failed: %s", err))
 	}
 
-	executionResult, contractResult, err := k.CallEvm(ctx, common.BytesToAddress(k.GetBRCXAddress().Bytes()), &to, big.NewInt(0), input)
+	info.CallData = hex.EncodeToString(input)
+	executionResult, contractResult, err := k.CallEvm(ctx, from, &to, big.NewInt(0), input, info)
 	if err != nil {
 		return nil, ErrCallEntryPoint(fmt.Sprintf("call entryPoint failed: %s", err))
 	}
