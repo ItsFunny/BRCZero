@@ -26,7 +26,7 @@ docker exec -it local_bitcoin_node bitcoin-cli -rpcwallet=testwallet_01 getwalle
 
 echo "************* Start ord... *************"
 cd /Users/oker/workspace/rust/okx/BRC20S
-
+cargo build
 rm -rf ./_cache1
 nohup ./target/debug/ord \
   --log-level=INFO \
