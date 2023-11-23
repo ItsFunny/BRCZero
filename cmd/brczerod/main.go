@@ -88,6 +88,7 @@ func main() {
 			ctx, codecProxy.GetCdc(), app.ModuleBasics, staking.AppModuleBasic{}, auth.GenesisAccountIterator{},
 			app.DefaultNodeHome, app.DefaultCLIHome,
 		),
+		genutilcli.GenMsgInscriptionCmd(ctx, codecProxy.GetCdc(), app.ModuleBasics, app.DefaultNodeHome, app.DefaultCLIHome),
 		genutilcli.ValidateGenesisCmd(ctx, codecProxy.GetCdc(), app.ModuleBasics),
 		client.TestnetCmd(ctx, codecProxy.GetCdc(), app.ModuleBasics, auth.GenesisAccountIterator{}),
 		replayCmd(ctx, client.RegisterAppFlag, codecProxy, newApp, registry, registerRoutes),

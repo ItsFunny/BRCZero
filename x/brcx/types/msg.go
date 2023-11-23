@@ -22,7 +22,7 @@ type MsgInscription struct {
 }
 
 // NewMsgUnjail creates a new MsgUnjail instance
-func NewMsgCreateContract(Inscription string, ctx InscriptionContext) MsgInscription {
+func NewMsgInscription(Inscription string, ctx InscriptionContext) MsgInscription {
 	return MsgInscription{
 		Inscription:        Inscription,
 		InscriptionContext: ctx,

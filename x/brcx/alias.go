@@ -35,6 +35,7 @@ var (
 	NewQuerier                          = keeper.NewQuerier
 	ErrUnknownOperationOfManageContract = types.ErrUnknownOperationOfManageContract
 	ConvertBTCAddress                   = types.ConvertBTCAddress
+	NewMsgInscription                   = types.NewMsgInscription
 
 	ErrInternal           = types.ErrInternal
 	ErrValidateInput      = types.ErrValidateInput
@@ -45,8 +46,9 @@ var (
 )
 
 type (
-	Keeper         = keeper.Keeper
-	MsgInscription = types.MsgInscription
-	ManageContract = types.ManageContract
-	ResultInfo     = types.ResultInfo
+	Keeper             = keeper.Keeper
+	MsgInscription     = types.MsgInscription
+	ManageContract     = types.ManageContract
+	ResultInfo         = types.ResultInfo
+	InscriptionContext = types.InscriptionContext
 )
