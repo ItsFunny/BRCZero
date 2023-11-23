@@ -1009,6 +1009,15 @@ func (mem *CListMempool) logUpdate(address string, nonce uint64) {
 	logDataPool.Put(logData)
 }
 
+func (mem *CListMempool) UpdateForBRCZeroData() {
+	if mem.txsAvailable != nil {
+		select {
+		case mem.txsAvailable <- struct{}{}:
+		default:
+		}
+	}
+}
+
 // Lock() must be help by the caller during execution.
 func (mem *CListMempool) Update(
 	height int64,

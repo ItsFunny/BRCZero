@@ -348,10 +348,11 @@ func (cs *State) handleTxsAvailable() {
 
 	switch cs.Step {
 	case cstypes.RoundStepNewHeight: // timeoutCommit phase
-		if cs.needProofBlock(cs.Height) {
-			// enterPropose will be called by enterNewRound
-			return
-		}
+		//todo when only brczeroData of mempool, it's only be called by block commit.
+		//if cs.needProofBlock(cs.Height) {
+		//	// enterPropose will be called by enterNewRound
+		//	return
+		//}
 
 		// +1ms to ensure RoundStepNewRound timeout always happens after RoundStepNewHeight
 		timeoutCommit := cs.StartTime.Sub(tmtime.Now()) + 1*time.Millisecond

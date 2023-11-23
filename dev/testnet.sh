@@ -106,6 +106,7 @@ run() {
     --log_level ${LOG_LEVEL} \
     --chain-id ${CHAIN_ID} \
     --consensus.timeout_commit 3s \
+    --consensus.create_empty_blocks=false \
     --elapsed DeliverTxs=0,Round=1,CommitRound=1,Produce=1 \
     --rest.laddr tcp://localhost:$restport \
     --consensus-role=v$index \

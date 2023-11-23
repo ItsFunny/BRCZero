@@ -30,6 +30,7 @@ run() {
       --log_file json \
       --dynamic-gp-mode=2 \
       --consensus.timeout_commit 8000ms \
+      --consensus.create_empty_blocks=false \
       --tree-enable-async-commit=false \
       --enable-gid \
       --fast-query=false \

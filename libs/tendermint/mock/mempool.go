@@ -64,6 +64,7 @@ func (Mempool) Update(
 	trace.GetElapsedInfo().AddInfo(trace.GasUsed, fmt.Sprintf("%d", gasUsed))
 	return nil
 }
+func (Mempool) UpdateForBRCZeroData()         {}
 func (Mempool) Flush()                        {}
 func (Mempool) FlushAppConn() error           { return nil }
 func (Mempool) TxsAvailable() <-chan struct{} { return make(chan struct{}) }
