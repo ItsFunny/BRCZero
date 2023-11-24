@@ -298,9 +298,8 @@ func (ms *MptStore) Has(key []byte) bool {
 func (ms *MptStore) Set(key, value []byte) {
 	types.AssertValidValue(value)
 
-	ms.brcRpcStateCache[hex.EncodeToString(key)] = value
-
 	if tmtypes.RpcFlag == tmtypes.RpcDeliverTxsMode {
+		ms.brcRpcStateCache[hex.EncodeToString(key)] = value
 		return
 	}
 
