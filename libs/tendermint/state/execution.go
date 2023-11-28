@@ -509,7 +509,7 @@ func (blockExec *BlockExecutor) commit(
 	//)
 
 	// notify mempool tx available
-	blockExec.mempool.UpdateForBRCZeroData()
+	blockExec.mempool.UpdateForBRCZeroData(block.Height, block.BtcHeight)
 
 	// Update BRCZeroData
 	blockExec.mempool.DelBrczeroDataByBTCHeight(block.BtcHeight)
