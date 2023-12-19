@@ -10,6 +10,6 @@ services:
     command:
 #      - "-daemon"
       - "-regtest"
-      - "-rpcuser=bitcoinrpc"
-      - "-rpcpassword=bitcoinrpc"
+#      - "-rpcuser=bitcoinrpc"
+#      - "-rpcpassword=bitcoinrpc"
 #    restart: always
